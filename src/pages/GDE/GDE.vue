@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md" :key="pageKey">
+  <div class="q-pa-md" :key="pageKey" >
     <div style="padding:20px">
       <span class="text-center" style="font-size:28px;"
         >Global Directory Editor</span

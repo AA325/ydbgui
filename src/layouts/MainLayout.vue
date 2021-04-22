@@ -18,7 +18,7 @@
         >
           <q-avatar size="42px">
             <img
-              src="~assets/uc-1.png"
+              src="~assets/logo.png"
               class="rotating"
               style="background-color:white;"
             />
@@ -99,7 +99,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-page-container>
+    <q-page-container style="max-width:1920px;margin:0 auto">
       <router-view />
     </q-page-container>
   </q-layout>
