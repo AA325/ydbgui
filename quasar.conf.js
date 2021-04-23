@@ -22,6 +22,7 @@ module.exports = function (/* ctx */) {
     boot: [
       'i18n',
       'axios',
+      'm'
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -79,6 +80,7 @@ module.exports = function (/* ctx */) {
       proxy:{
         // proxy all requests starting with /get
         '/gde':'http://localhost:8089',
+        '/ydbwebapi':'http://localhost:8089'
         }
 
     },
@@ -103,7 +105,8 @@ module.exports = function (/* ctx */) {
 
       // Quasar plugins
       plugins: [
-        'Notify'
+        'Notify',
+        'LocalStorage',
       ]
     },
 

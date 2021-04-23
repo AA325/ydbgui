@@ -67,6 +67,14 @@ export default {
       ]
     };
   },
+  created(){
+    this.theme = this.$q.localStorage.getItem("ydb-app-theme") || "light";
+    if (this.theme === "dark") {
+      this.$q.dark.set(true);
+    } else {
+      this.$q.dark.set(false);
+    }
+  },
   methods: {
     changeTheme() {
       if (this.theme === "light") {

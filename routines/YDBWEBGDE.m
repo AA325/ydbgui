@@ -24,6 +24,8 @@ YDBWEBGDE
 ; d get^GDEWEB(.RESULT,.ARGS)
 ;
 get(HTTPREQ,HTTPRSP,HTTPARGS)
+	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
+	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;
@@ -113,6 +115,8 @@ get(HTTPREQ,HTTPRSP,HTTPARGS)
 ; s STATUS=$$delete^GDEWEB(.ARGS,.BODY,.RESULT)
 ;
 delete(HTTPREQ,HTTPRSP,HTTPARGS)
+	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
+	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;
@@ -199,6 +203,8 @@ deleteone(JSON)
 ; s STATUS=$$save^GDEWEB(.ARGS,.BODY,.RESULT)
 ;
 save(HTTPREQ,HTTPRSP,HTTPARGS)
+	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
+	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;
@@ -310,6 +316,8 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 ; s STATUS=$$verify^GDEWEB(.ARGS,.BODY,.RESULT)
 ;
 verify(HTTPREQ,HTTPRSP,HTTPARGS)
+	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
+	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;

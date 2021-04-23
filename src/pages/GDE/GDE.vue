@@ -1,6 +1,6 @@
 <template>
-  <div class="q-pa-md" :key="pageKey" >
-    <div style="padding:20px">
+  <div class="q-pa-md" :key="pageKey" id="gdediv">
+    <div style="padding:5px">
       <span class="text-center" style="font-size:28px;padding:25px"
         >Global Directory Editor</span
       >
@@ -85,13 +85,6 @@
             v-if="show(selectedName[0])"
           />
         </div>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:150px" color="primary" :label="props.value" />
-          </div>
-        </q-td>
       </template>
       <template v-slot:body-cell-region="props">
         <q-td :props="props">
@@ -898,7 +891,7 @@
 
  <!-- ********************************** ADD NEW END ***************************************** -->
  <!-- ********************************** ERROR START ***************************************** -->
- <q-dialog v-model="errorDialog" persistent full-width>
+ <q-dialog v-model="errorDialog" full-width>
       <q-card>
         <q-bar class="bg-negative">
           <span class="text-white">ERROR</span>
@@ -918,7 +911,6 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import { uid } from 'quasar'
 import { required, numeric } from "vuelidate/lib/validators";
 
@@ -985,7 +977,7 @@ export default {
           field: "displayName",
           label: "Name",
           sortable: true,
-          align: "left"
+          align: "left",
         },
         {
           name: "region",
@@ -1226,18 +1218,24 @@ export default {
           STATS: true,
           STDNULLCOLL: true
         }
-      }
+      },
+      
     };
   },
   computed: {
     sortOptions() {
       const self = this;
-
-      // Create an options list from our fields
       return self.fields
         .filter(f => f.sortable)
         .map(f => ({ text: f.label, value: f.key }));
+    },
+  endPoint(){
+    if (this.$store.getters['app/details'].port && this.$store.getters['app/details'].protocol && this.$store.getters['app/details'].ip){
+      return `${this.$store.getters['app/details'].protocol}://${this.$store.getters['app/details'].ip}:${this.$store.getters['app/details'].port}`
+    } else {
+      return ''
     }
+  }
   },
   mounted() {
     const self = this;
@@ -1656,9 +1654,9 @@ export default {
     },
     getdata() {
       const self = this;
-      axios({
+      self.$axios({
         method: "GET",
-        url: "/gde/get"
+        url: self.endPoint + "/gde/get"
       }).then(
         result => {
           self.names = result.data.names;
@@ -1679,9 +1677,9 @@ export default {
     verifydata() {
       const self = this;
       self.verified = false;
-      axios({
+      self.$axios({
         method: "POST",
-        url: "/gde/verify",
+        url: self.endPoint + "/gde/verify",
         data: {
           names: self.names,
           regions: self.regions,
@@ -1729,9 +1727,9 @@ export default {
     },
     async savedata() {
       const self = this;
-      axios({
+      self.$axios({
         method: "POST",
-        url: "/gde/save",
+        url: self.endPoint + "/gde/save",
         data: {
           names: self.names,
           regions: self.regions,

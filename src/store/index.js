@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 // import example from './module-example'
+import app from './module-app'
 
 Vue.use(Vuex)
 
@@ -14,16 +15,14 @@ Vue.use(Vuex)
  * with the Store instance.
  */
 
-export default function (/* { ssrContext } */) {
-  const Store = new Vuex.Store({
-    modules: {
-      // example
-    },
 
-    // enable strict mode (adds overhead!)
-    // for dev mode only
-    strict: process.env.DEBUGGING
-  })
+export default new Vuex.Store({
+  modules: {
+    // example
+    app,
+  },
 
-  return Store
-}
+  // enable strict mode (adds overhead!)
+  // for dev mode only
+  strict: false
+})

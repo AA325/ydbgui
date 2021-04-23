@@ -10,6 +10,13 @@ ROUTES
 	S YDBWEB(":WS","ROUTES","POST","gde/save","save^YDBWEBGDE")=""
 	S YDBWEB(":WS","ROUTES","POST","gde/add","add^YDBWEBGDE")=""
 	S YDBWEB(":WS","ROUTES","POST","gde/delete","delete^YDBWEBGDE")=""
+	S YDBWEB(":WS","ROUTES","POST","ydbwebapi","API^YDBWEBAPI")=""
+	S YDBWEB(":WS","ROUTES","OPTIONS","gde/get","get^YDBWEBGDE")=""
+	S YDBWEB(":WS","ROUTES","OPTIONS","gde/verify","verify^YDBWEBGDE")=""
+	S YDBWEB(":WS","ROUTES","OPTIONS","gde/save","save^YDBWEBGDE")=""
+	S YDBWEB(":WS","ROUTES","OPTIONS","gde/add","add^YDBWEBGDE")=""
+	S YDBWEB(":WS","ROUTES","OPTIONS","gde/delete","delete^YDBWEBGDE")=""
+	S YDBWEB(":WS","ROUTES","OPTIONS","ydbwebapi","API^YDBWEBAPI")=""
 	;
 	Q	
 	;

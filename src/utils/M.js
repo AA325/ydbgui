@@ -1,26 +1,26 @@
 import axios from 'axios'
 import createStore from '../store/index'
-import FUZDialog from '../components/FUZDialog'
-import { Dialog, LocalStorage } from 'quasar'
 import Vue from 'vue'
-
-// import { LocalStorage } from 'quasar'
 
 export default async (routine, data) => {
   const store = typeof createStore === 'function'
     ? createStore({ Vue })
     : createStore
   try {
-    store.dispatch('app/setAjaxLoading', true)
+    // store.dispatch('app/setAjaxLoading', true)
+    let endPoint = ''
+    if ( store.state.app.details.ip
+      && store.state.app.details.port
+      && store.state.app.details.protocol
+      ) {
+        endPoint = `${store.state.app.details.protocol}://${store.state.app.details.ip}:${store.state.app.details.port}`
+      }
     const result = await axios({
-      url: 'http://127.0.0.1:7777/api',
+      url: endPoint+'/ydbwebapi',
       method: 'post',
-      headers: {
-        auth: store.state.app.session.session || '',
-        jwt: store.state.app.session.jwt || ''
-      },
       data: { routine, data }
     })
+    /*
     if (result.data.FUZDialog && result.data.FUZDialog.status === true && result.data.FUZDialog.props) {
       Dialog.create({
         component: FUZDialog,
@@ -46,7 +46,10 @@ export default async (routine, data) => {
       store.dispatch('app/setAjaxLoading', false)
       return result.data && result.data.data
     }
+    */
+    return result.data && result.data.data
   } catch (e) {
+    /*
     store.dispatch('app/setAjaxLoading', false)
     Dialog.create({
       component: FUZDialog,
@@ -64,5 +67,6 @@ export default async (routine, data) => {
     }).onCancel(() => {
     }).onDismiss(() => {
     })
+    */
   }
 }
