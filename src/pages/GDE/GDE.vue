@@ -10,16 +10,19 @@
               color="orange"
             >
               <q-fab-action @click="addNameDialog = true" color="primary" icon="add">
+                Name
                 <q-tooltip content-style="font-size: 20px">
                    Add Name
                 </q-tooltip>
               </q-fab-action>
               <q-fab-action @click="addRegionDialog = true" color="positive" icon="add" >
+                Region
                <q-tooltip content-style="font-size: 20px">
                    Add Region
                 </q-tooltip>
               </q-fab-action>
               <q-fab-action @click="addSegmentDialog = true" color="accent" icon="add" >
+                Segment
                <q-tooltip content-style="font-size: 20px">
                    Add Segment
                 </q-tooltip>
