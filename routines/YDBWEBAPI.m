@@ -17,9 +17,3 @@ API(%Q,%R,%A)
 	K @%R D ENCODE^YDBWEB("%J",%R)
 	Q
 	;
-EXAMPLE(I,O)
-	;S OUTPUT=$NA(O("data","data"))
-	;F I=1:1:10 S @OUTPUT@(I)=I("data","param")_" HAIDER => "_I
-	S O("data","data")="abc"
-	Q
-	;

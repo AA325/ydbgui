@@ -34,14 +34,14 @@
                   <q-item-label>Global Directory Editor (GDE)</q-item-label>
                 </q-item-section>
               </q-item>
-              <q-item clickable v-close-popup :to="'/globals'">
-                <q-item-section>
-                  <q-item-label>Globals</q-item-label>
-                </q-item-section>
-              </q-item>
               <q-item clickable v-close-popup :to="'/routines'">
                 <q-item-section>
                   <q-item-label>Routines </q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup :to="'/globals'">
+                <q-item-section>
+                  <q-item-label>Globals</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>

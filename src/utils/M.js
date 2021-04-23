@@ -49,6 +49,7 @@ export default async (routine, data) => {
     */
     return result.data && result.data.data
   } catch (e) {
+    console.log(e)
     /*
     store.dispatch('app/setAjaxLoading', false)
     Dialog.create({

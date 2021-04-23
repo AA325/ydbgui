@@ -1,12 +1,21 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md" id="routinesDiv">
     <div style="padding:5px">
       <span class="text-center" style="font-size:28px;padding:25px">
-        Routines
+        Routines ({{ routineTotal }})
       </span>
     </div>
-    <q-splitter v-model="splitterModel" style="height:88vh">
-      <template v-slot:before>
+    <q-splitter
+      v-model="splitterModel"
+      style="height:88vh"
+      v-if="!loading && !loadingDialog"
+    >
+      <template v-slot:before >
+      <q-infinite-scroll @load="loadMoreRoutines" 
+             :offset="0"
+             ref="infscroll"
+             scroll-target="#routinesDiv"
+             :initial-index="1">
         <div class="q-pa-md">
           <q-input
             filled
@@ -14,6 +23,7 @@
             v-model="searchRoutines"
             label="Search"
             :dense="true"
+            @keydown.enter="getRoutines"
           >
             <template v-slot:append>
               <q-icon
@@ -22,41 +32,79 @@
                 @click="searchRoutines = ''"
                 class="cursor-pointer"
               />
-              <q-icon name="search" />
+              <q-icon
+                name="search"
+                class="cursor-pointer"
+                @click="getRoutines"
+                
+              />
             </template>
           </q-input>
         </div>
         <div class="q-pa-md">
-          <q-list style="height:88vh">
+          <q-list>
+            <div v-for="(rtn,index) in shownRoutineList" :key="'rlist-'+index">
             <q-item>
               <q-item-section>
-                <q-item-label>YDBWEB</q-item-label>
+                <q-item-label>{{rtn.r}}</q-item-label>
               </q-item-section>
-              <q-item-section side top>
-                <q-item-label caption>/home/aa/routines/</q-item-label>
+              <q-item-section side>
+                <q-item-label caption>{{rtn.p}}</q-item-label>
               </q-item-section>
             </q-item>
             <q-separator inset />
+            </div>
+          <q-item clickable @click="loadMoreScrolledRoutines" v-if="!finishedLoadingAllRoutines">
+              <q-item-section>
+                <q-item-label style="margin:0 auto">load more</q-item-label>
+              </q-item-section>
+            </q-item>
           </q-list>
         </div>
+      <template v-slot:loading>
+          <div class="row justify-center q-my-md">
+            <q-spinner-dots color="primary" size="40px" />
+          </div>
+        </template>
+             </q-infinite-scroll>
       </template>
 
       <template v-slot:after>
-          <codemirror
-            ref="cmEditor"
-            :value="code"
-            :options="cmOptions"
-            @ready="onCmReady"
-            @focus="onCmFocus"
-            @input="onCmCodeChange"
-          />
+        <codemirror
+          v-if="code.length>0"
+          ref="cmEditor"
+          :value="code"
+          :options="cmOptions"
+          @ready="onCmReady"
+          @focus="onCmFocus"
+          @input="onCmCodeChange"
+        />
       </template>
     </q-splitter>
+    <q-dialog v-model="loadingDialog" persistent>
+      <q-card style="height:185px;width:300px">
+        <q-card-section class="q-pa-md">
+          <span style="font-size:18px;" class="flex flex-center"
+            >Loading Routines. Please wait!</span
+          >
+        </q-card-section>
+        <q-card-section class="q-pa-md">
+          <div class="flex flex-center">
+            <q-spinner-hourglass
+              :color="$q.dark.isActive ? 'purple' : 'orange'"
+              size="6em"
+              v-if="loading"
+              :thickness="0"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 <script>
 import { codemirror } from "vue-codemirror";
-import 'codemirror/mode/mumps/mumps.js'
+import "codemirror/mode/mumps/mumps.js";
 
 export default {
   name: "Routines",
@@ -65,50 +113,117 @@ export default {
   },
   data() {
     return {
-      splitterModel: 30,
-      searchRoutines: "",
-      code: "const a = 10",
+      splitterModel: 35,
+      searchRoutines: "YDB*",
+      shownRoutineList:[],
+      shownRoutineIndex:0,
+      routinePatchCount:100,
+      finishedLoadingAllRoutines:false,
+      code: "",
       cmOptions: {
         tabSize: 4,
         mode: {
-            name: 'mumps',
+          name: "mumps"
         },
-        theme: this.$q.dark.isActive?'icecoder':'default',
+        theme: this.$q.dark.isActive ? "icecoder" : "default",
         lineNumbers: true,
         line: true
-      }
+      },
+      routinesList: [],
+      routinesPaths: [],
+      loading: false,
+      loadingDialog: false,
+      routineTotal: 0
     };
   },
   methods: {
+    loadMoreRoutines(index, done){
+      this.shownRoutineIndex = index
+    for (let i=(this.shownRoutineIndex*this.routinePatchCount);
+     i<((this.shownRoutineIndex*this.routinePatchCount) + this.routinePatchCount); i++){
+        if (this.routinesList[i]){
+          this.shownRoutineList.push(this.routinesList[i])
+        } else {
+          this.finishedLoadingAllRoutines = true
+          done(true)
+          return
+        }
+    }
+    done()
+    this.$refs.infscroll.stop()
+    },
+    async getRoutines(){
+      if (!this.searchRoutines.length){
+        return 
+      }
+      this.loadingDialog = true
+      this.shownRoutineList = []
+      this.shownRoutineIndex = 0
+      this.finishedLoadingAllRoutines = false
+      this.loading = true
+    let data = await this.$M("GETROUTINESLIST^YDBWEBRTNS", {
+      PATTERN: this.searchRoutines
+    });
+    if (data && data.RTOTAL) {
+      this.routineTotal = data.RTOTAL;
+    } else {
+      this.routineTotal = 0;
+    }
+    if (data && data.RLIST) {
+      this.routinesList = data.RLIST;
+    } else {
+      this.routinesList = [];
+    }
+    if (data && data.PLIST) {
+      this.routinesPaths = data.PLIST;
+    } else {
+      this.routinesPaths = [];
+    }
+    for (let i=(this.shownRoutineIndex*this.routinePatchCount);
+     i<((this.shownRoutineIndex*this.routinePatchCount) + this.routinePatchCount); i++){
+        if (this.routinesList[i]){
+          this.shownRoutineList.push(this.routinesList[i])
+        } else {
+           this.finishedLoadingAllRoutines = true
+        }
+    }
+    this.loading = false;
+    this.loadingDialog = false;
+    },
     onCmReady(cm) {
-      console.log("the editor is readied!", cm);
+      // console.log("the editor is readied!", cm);
     },
     onCmFocus(cm) {
-      console.log("the editor is focused!", cm);
+      // console.log("the editor is focused!", cm);
     },
     onCmCodeChange(newCode) {
-      console.log("this is new code", newCode);
+      // console.log("this is new code", newCode);
       this.code = newCode;
+    },
+    loadMoreScrolledRoutines(){
+        this.$refs.infscroll.resume()
+        this.$refs.infscroll.trigger()
     }
   },
   computed: {
     codemirror() {
+      // console.log("the current CodeMirror instance object:", this.codemirror);
       return this.$refs.cmEditor.codemirror;
     },
-    theme(){
-        return this.$q.dark.isActive
+    theme() {
+      return this.$q.dark.isActive;
     }
   },
   watch: {
     splitterModel(v) {
       this.$q.localStorage.set("ydb-routines-splitter", v);
     },
-    theme(v){
-        if (v){
-            this.$set(this.cmOptions,'theme','icecoder')
-        } else {
-            this.$set(this.cmOptions,'theme','default')
-        }
+    theme(v) {
+      if (v) {
+        this.$set(this.cmOptions, "theme", "icecoder");
+      } else {
+        this.$set(this.cmOptions, "theme", "default");
+      }
     }
   },
   created() {
@@ -118,9 +233,7 @@ export default {
     }
   },
   async mounted() {
-    let data = await this.$M("EXAMPLE^YDBWEBAPI");
-    this.data = data.data;
-    console.log("the current CodeMirror instance object:", this.codemirror);
+    await this.getRoutines()
   }
 };
 </script>
@@ -131,5 +244,4 @@ export default {
   border: 1px solid #eee;
   height: 88vh;
 }
-
 </style>

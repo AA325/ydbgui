@@ -26,6 +26,9 @@ Start(PORT) ;
 	S NOGLB=1
 	I 1 J JOB(PORT) H 1 I '$T W !,"YottaDB Web Server could not be started!" Q
 	S JOB=$ZJOB
+	I '$$DirectoryExists^YDBUTILS("/tmp") D
+	. W !,"Creating /tmp ..."
+	. W:$$CreateDirectoryTree^YDBUTILS("/tmp") " succeeded" 
 	ZSY "echo ""PID:"_JOB_",Port:"_PORT_""" > /tmp/ydbweb.info"
 	W !,"YottaDB Web Server started successfully. Port: ",PORT," - PID: ",JOB,!
 	Q
@@ -43,7 +46,17 @@ Stop;
 	W !,"Killed PID: "_PID_". YottaDB Web Server stopped successfully.",!
 	;ZSY "netstat -ano -p tcp | grep "_PORT
 	Q
-	;    
+	;
+Check
+	K
+	W ! N SRC,LINE
+	S SRC="/tmp/ydbweb.info"
+	O SRC:(readonly)
+	U SRC R LINE C SRC S LINE=$TR(LINE,$C(13))
+	N PORT
+	S PORT=$P($P(LINE,",",2),":",2)
+	ZSY "netstat -ano -p tcp | grep "_PORT
+	Q 
 	;       
 RUN(HTTPREQ,HTTPRSP,HTTPARGS)
 	S HTTPRSP("mime")="text/html"
