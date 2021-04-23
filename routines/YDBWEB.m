@@ -11,12 +11,6 @@ ROUTES
 	S YDBWEB(":WS","ROUTES","POST","gde/add","add^YDBWEBGDE")=""
 	S YDBWEB(":WS","ROUTES","POST","gde/delete","delete^YDBWEBGDE")=""
 	;
-	;	
-	;;GET gde/get get^GDEWEB
-	;;POST gde/verify verify^GDEWEB
-	;;POST gde/save save^GDEWEB
-	;;POST gde/add add^GDEWEB
-	;;POST gde/delete delete^GDEWEB
 	Q	
 	;
 Start(PORT) ;
