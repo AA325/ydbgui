@@ -27,9 +27,12 @@ POPULATEROUTINE(I,O)
 	S R=$NA(O("data"))
 	S RTN=I("data","RTN")
 	S PATH=I("data","PATH")
-	N FILE
-	I $$FileExists^YDBUTILS(PATH_RTN_".m") D  I 1
-	. D ReadFileByLine^YDBUTILS(PATH_RTN_".m",.FILE) 
+	N FILE,FULLPATH
+	S FULLPATH=PATH
+	I $E(RTN)="%" S FULLPATH=FULLPATH_"_"_$E(RTN,2,$L(RTN))_".m"
+	E  S FULLPATH=FULLPATH_RTN_".m"
+	I $$FileExists^YDBUTILS(FULLPATH) D  I 1
+	. D ReadFileByLine^YDBUTILS(FULLPATH,.FILE) 
 	. S @R@("STATUS")="true"
 	E  S @R@("STATUS")="false" Q
 	M @R@("CODE")=FILE ZK @R@("CODE")

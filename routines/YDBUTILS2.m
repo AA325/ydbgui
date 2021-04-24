@@ -4,12 +4,12 @@ YDBUTILS2
 	;
 	Q
 	;
-RunShellCommand(Command,Return)
+RunShellCommand(Command,RET)
 	N DEV,COUNTER,STR S COUNTER=0
 	S DEV="RunShellCommmandPipe"_$J
 	O DEV:(command=Command:readonly)::"PIPE"
-	U DEV F  Q:$ZEOF=1  R STR:2 S Return($I(COUNTER))=STR Q:'$T
-	C DEV I $G(Return(COUNTER))="" K Return(COUNTER)
+	U DEV F  Q:$ZEOF=1  R STR:2 S RET($I(COUNTER))=STR Q:'$T
+	C DEV I $G(RET(COUNTER))="" K RET(COUNTER)
 	Q
 	;
 DirectoryExists(PATH)
@@ -33,11 +33,16 @@ CreateDirectoryTree(PATH)
 	I $$DirectoryExists(PATH) Q 1
 	Q 0
 	;
-GetRoutineList(RTNS,PATTERN)
-	N %ZR
+GetRoutineList(%ZR,PATTERN)
 	I $G(PATTERN)="" S PATTERN="*"
 	D SILENT^%RSEL(PATTERN)
-	M RTNS=%ZR K %ZR
+	Q
+	;
+GetGlobalList(%ZG,PATTERN)
+	I $G(PATTERN)="" S PATTERN="*"
+	S %ZG=PATTERN
+	D GD^YDBUTILS3(.%ZG)
+	ZK %ZG
 	Q
 	;
 ReadFileByLine(FILE,RET)

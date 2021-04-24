@@ -1,16 +1,22 @@
 <template>
   <div class="q-pa-md" id="routinesDiv">
     <div style="padding:5px">
-      <span class="text-center" style="font-size:28px;padding:25px">
-        Routines
-      </span>
+     <q-breadcrumbs gutter="xs">
+      <q-breadcrumbs-el label="Home" />
+      <q-breadcrumbs-el label="System Explorer" />
+      <q-breadcrumbs-el label="Routines" />
+      <q-breadcrumbs-el :label="(currentActivePath + currentActiveRoutine) ? currentActivePath + currentActiveRoutine + '.m':''" />
+    </q-breadcrumbs>
     </div>
     <q-splitter
       v-model="splitterModel"
-      style="height:88vh"
+      style="height:89vh"
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
+         <span class="text-center" style="font-size:28px;padding:25px">
+        Routines
+      </span>
         <q-infinite-scroll
           @load="loadMoreRoutines"
           :offset="0"
@@ -49,9 +55,10 @@
                   <q-item-label overline
                     >{{ routineTotal }} Routines</q-item-label
                   >
+                  <!--
                   <q-item-label
                     >in {{ routinesPaths.length }} location(s)</q-item-label
-                  >
+                  >-->
                 </q-item-section>
               </q-item>
               <div
@@ -62,9 +69,11 @@
                   <q-item-section>
                     <q-item-label>{{ rtn.r }}</q-item-label>
                   </q-item-section>
+                  <!--
                   <q-item-section side>
                     <q-item-label caption>{{ rtn.p }}</q-item-label>
                   </q-item-section>
+                -->
                 </q-item>
                 <q-separator inset />
               </div>
@@ -88,9 +97,6 @@
       </template>
 
       <template v-slot:after>
-      <span class="text-center text-primary" style="font-size:22px;padding:10px">
-        {{(currentActivePath + currentActiveRoutine) ? currentActivePath + currentActiveRoutine + '.m':'' }}
-      </span>
         <codemirror
           v-if="code.length > 0"
           ref="cmEditor"
@@ -134,7 +140,7 @@ export default {
   },
   data() {
     return {
-      splitterModel: 35,
+      splitterModel: 10,
       searchRoutines: "YDB*",
       shownRoutineList: [],
       shownRoutineIndex: 0,
@@ -287,6 +293,9 @@ export default {
   },
   async mounted() {
     await this.getRoutines();
+    if (this.shownRoutineList[0]){
+      this.populateRoutine(this.shownRoutineList[0])
+    }
   }
 };
 </script>
@@ -295,6 +304,6 @@ export default {
 @import "../../../node_modules/codemirror/theme/abcdef.css";
 .CodeMirror {
   border: 1px solid #eee;
-  height: 84vh;
+  height: 89vh;
 }
 </style>

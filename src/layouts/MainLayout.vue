@@ -34,9 +34,13 @@
                   <q-item-label>Global Directory Editor (GDE)</q-item-label>
                 </q-item-section>
               </q-item>
+            </q-list>
+          </q-btn-dropdown>
+          <q-btn-dropdown flat label="System Explorer" dense>
+            <q-list>
               <q-item clickable v-close-popup :to="'/routines'">
                 <q-item-section>
-                  <q-item-label>Routines </q-item-label>
+                  <q-item-label>Routines</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/globals'">

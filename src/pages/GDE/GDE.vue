@@ -1,8 +1,13 @@
 <template>
   <div class="q-pa-md" :key="pageKey" id="gdediv">
     <div style="padding:5px">
+      <q-breadcrumbs gutter="xs">
+      <q-breadcrumbs-el label="Home" />
+      <q-breadcrumbs-el label="System Administration" />
+      <q-breadcrumbs-el label="Global Directory Editor" />
+    </q-breadcrumbs>
       <span class="text-center" style="font-size:28px;padding:25px"
-        >Global Directory Editor</span
+        >GDE</span
       >
           <q-fab
               icon="add"
