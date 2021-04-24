@@ -22,3 +22,15 @@ GETROUTINESLIST(I,O)
 	. I $I(C) S @R@("PLIST",C)=A
 	Q
 	;
+POPULATEROUTINE(I,O)
+	N RTN,PATH,R
+	S R=$NA(O("data"))
+	S RTN=I("data","RTN")
+	S PATH=I("data","PATH")
+	N FILE
+	I $$FileExists^YDBUTILS(PATH_RTN_".m") D  I 1
+	. D ReadFileByLine^YDBUTILS(PATH_RTN_".m",.FILE) 
+	. S @R@("STATUS")="true"
+	E  S @R@("STATUS")="false" Q
+	M @R@("CODE")=FILE ZK @R@("CODE")
+	Q 
