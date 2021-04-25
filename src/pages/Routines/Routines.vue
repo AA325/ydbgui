@@ -7,10 +7,11 @@
       <q-breadcrumbs-el label="Routines" />
       <q-breadcrumbs-el :label="(currentActivePath + currentActiveRoutine) ? currentActivePath + currentActiveRoutine + '.m':''" />
     </q-breadcrumbs>
+    
     </div>
     <q-splitter
       v-model="splitterModel"
-      style="height:89vh"
+      style="height:87vh"
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
@@ -210,11 +211,17 @@ export default {
       if (!this.searchRoutines.length) {
         return;
       }
-      this.loadingDialog = true;
+      let done = false
+      setTimeout(()=>{
+        if (done){
+          return
+        }
+        this.loading = true;
+        this.loadingDialog = true;
+      },1000)
       this.shownRoutineList = [];
       this.shownRoutineIndex = 0;
       this.finishedLoadingAllRoutines = false;
-      this.loading = true;
       let data = await this.$M("GETROUTINESLIST^YDBWEBRTNS", {
         PATTERN: this.searchRoutines
       });
@@ -246,6 +253,7 @@ export default {
           this.finishedLoadingAllRoutines = true;
         }
       }
+      done = true
       this.loading = false;
       this.loadingDialog = false;
     },
@@ -304,6 +312,6 @@ export default {
 @import "../../../node_modules/codemirror/theme/abcdef.css";
 .CodeMirror {
   border: 1px solid #eee;
-  height: 89vh;
+  height: 87vh;
 }
 </style>

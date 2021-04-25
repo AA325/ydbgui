@@ -9,6 +9,13 @@
       <span class="text-center" style="font-size:28px;padding:25px"
         >GDE</span
       >
+      
+      <q-btn round size="sm" icon="add"  :color="$q.dark.isActive ? 'purple' : 'orange'"  @click="addDialog = true">
+        <q-tooltip>
+        Add Segment,Region and Name
+        </q-tooltip>
+      </q-btn>   
+      <!--
           <q-fab
               icon="add"
               direction="right"
@@ -33,6 +40,7 @@
                 </q-tooltip>
               </q-fab-action>
             </q-fab>
+            -->
       <q-banner inline-actions class="text-white bg-red" v-if="!saved && verified && !errors">
         Your changes have been verified but not saved. Please click Save to
         apply the changes!
@@ -640,6 +648,32 @@
 </div>
  <!-- ********************************** MAP-END ********************************************* -->
  <!-- ********************************** ADD NEW START**************************************** -->
+ <q-dialog v-model="addDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Add Segment, Region and Name</div>
+        </q-card-section>
+          <q-card-section class="q-pt-none">
+          <q-input
+            outlined
+            label="Segment"
+            v-model="addSegment"
+            :dense="true"
+          />
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input
+            outlined
+            label="File"
+            v-model="addFile"
+            :dense="true"
+          />
+        </q-card-section>
+         <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="OK" @click="addNewSegmentAndFile"/> 
+        </q-card-actions>
+      </q-card>
+ </q-dialog>
 <q-dialog v-model="addNameDialog" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
@@ -927,6 +961,9 @@ export default {
   name: "Gde",
   data() {
     return {
+      addSegment:'',
+      addFile:'',
+      addDialog:false,
       errorDialog:false,
       addNameDialog:false,
       addRegionDialog:false,
@@ -1192,17 +1229,21 @@ export default {
         segment: {
           NAME: "",
           FILE_NAME: "",
+          FILE_TYPE: "DYNAMIC",
           ACCESS_METHOD: "BG",
-          ALLOCATION: 100,
+          ALLOCATION: 150000,
           ASYNCIO: false,
-          BLOCK_SIZE: 1024,
+          BLOCK_SIZE: 4096,
+          BUCKET_SIZE: "",
+          DEFER: "",
           DEFER_ALLOCATE: true,
           ENCRYPTION_FLAG: false,
-          EXTENSION_COUNT: 100,
+          EXTENSION_COUNT: 20000,
           GLOBAL_BUFFER_COUNT: 1024,
-          LOCK_SPACE: 40,
+          LOCK_SPACE: 1000,
           MUTEX_SLOTS: 1024,
-          RESERVED_BYTES: 0
+          RESERVED_BYTES: 0,
+          WINDOW_SIZE: ""
         },
         region: {
           NAME: "",
@@ -1217,7 +1258,7 @@ export default {
           FILE_NAME: "",
           KEY_SIZE: 64,
           LOCK_CRIT_SEPARATE: true,
-          NULL_SUBSCRIPTS: "ALWAYS",
+          NULL_SUBSCRIPTS: "NEVER",
           QDBRUNDOWN: false,
           RECORD_SIZE: 256,
           STATS: true,
@@ -1320,6 +1361,16 @@ export default {
     return {};
   },
   methods: {
+    async addNewSegmentAndFile(){
+      let data = await this.$M('ADDSEGMENTANDFILE^GDEWEB',{
+        SEGMENT: this.addSegment.toUpperCase(),
+        FILE: this.addFile
+      })
+      console.log(data)
+      this.addSegment=''
+      this.addFile=''
+      addDialog = false
+    },
     forceUpper(e, obj, prop) {
       this.$set(obj, prop, e.toUpperCase());
     },
@@ -1451,7 +1502,7 @@ export default {
             FILE_NAME: "",
             KEY_SIZE: 64,
             LOCK_CRIT_SEPARATE: true,
-            NULL_SUBSCRIPTS: "ALWAYS",
+            NULL_SUBSCRIPTS: "NEVER",
             QDBRUNDOWN: false,
             RECORD_SIZE: 256,
             STATS: true,
@@ -1612,6 +1663,7 @@ export default {
           delete self.names[item.name];
           index = self.items.findIndex(name => name.name === item.name);
           self.items.splice(index, 1);
+          self.verifydata()
           break;
         case "segment":
           // disable eslint max-len for next line so it looks like all other findIndex calls
@@ -1633,6 +1685,7 @@ export default {
             segment => segment.name === item.name
           );
           self.segmentItems.splice(index, 1);
+          self.verifydata()
           break;
         case "region":
           unsavedItemsIndex = self.unsavedItems.regions.findIndex(
@@ -1652,6 +1705,7 @@ export default {
             region => region.name === item.name
           );
           self.regionItems.splice(index, 1);
+          self.verifydata()
           break;
         default:
           break;
@@ -1697,17 +1751,21 @@ export default {
             self.errors = null
             return Promise.resolve(self.makeitems());
           }
+          /*
           if (
             !self.fromSave &&
-            result.data.errors.length === 1 &&
-            result.data.errors[0].includes("GDE-I-MAPBAD")
+            result.data.errors.length === 1
+            && result.data.errors[0].includes("GDE-I-MAPBAD")
           ) {
             self.verified = true;
             return Promise.resolve(self.makeitems());
           }
+          */
            self.errors = result.data.errors
+           self.errorDialog = true
           return Promise.reject(result.data.errors);
         })
+        /*
         .catch(error => {
           if (!self.errors) {
             self.errors = JSON.stringify(error,null,4);
@@ -1728,6 +1786,7 @@ export default {
           self.verified = false;
           self.errorDialog = true
         });
+        */
       self.verified = true;
     },
     async savedata() {
@@ -1767,6 +1826,7 @@ export default {
           self.errors = result.data.errors
           return Promise.reject(result.data.errors);
         })
+        /*
         .catch(error => {
           self.deletedItems = [];
           if (!self.errors) {
@@ -1777,6 +1837,7 @@ export default {
           self.verified = false;
           self.errorDialog = true
         });
+        */
     },
     notify(message, type) {
       let color = "positive";

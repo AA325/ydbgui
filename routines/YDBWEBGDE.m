@@ -133,7 +133,7 @@ delete(HTTPREQ,HTTPRSP,HTTPARGS)
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	n attr,filetype,gdeputzs,gdexcept,maxs,record,ref,sreg,tempfile
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") D SETERROR^YDBWEB(301,"BODY") quit ""
+	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q ;D SETERROR^YDBWEB(301,"BODY") quit ""
 	d DECODE^YDBWEB(HTTPREQ("body"),"JSON","ERR")
 	i $d(ERR) D SETERROR^YDBWEB(202) quit ""
 	;
@@ -221,7 +221,7 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	n attr,filetype,gdeputzs,gdexcept,maxs,record,ref,sreg,tempfile
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") D SETERROR^YDBWEB(301,"BODY") quit ""
+	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q ;D SETERROR^YDBWEB(301,"BODY") quit ""
 	d DECODE^YDBWEB(HTTPREQ("body"),"JSON","ERR")
 	i $d(ERR) D SETERROR^YDBWEB(202) quit ""
 	;
@@ -333,7 +333,7 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	n tfile,tmpacc,tmpreg,tmpseg,tokens,typevalue,update,upper,v30,v44,v532
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") D SETERROR^YDBWEB(301,"BODY") quit ""
+	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q ;D SETERROR^YDBWEB(301,"BODY") quit ""
 	d DECODE^YDBWEB(HTTPREQ("body"),"JSON","ERR")
 	i $d(ERR) D SETERROR^YDBWEB(202) quit ""
 	;

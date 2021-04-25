@@ -1,6 +1,7 @@
 <template>
   <q-layout>
     <q-header
+      v-if="(settingsEntered && isElectron) || !isElectron"
       elevated
       class="text-white"
       height-hint="61.59"
@@ -51,9 +52,7 @@
             </q-list>
           </q-btn-dropdown>
           <q-btn-dropdown flat label="Utilities" dense>
-            <q-list>
-   
-            </q-list>
+            <q-list> </q-list>
           </q-btn-dropdown>
           <router-link to="/gde" class="text-white">
             DOCUMENTATION
@@ -74,6 +73,7 @@
             style="width: 40px"
           />
           <q-btn
+            v-if="isElectron"
             dense
             flat
             round
@@ -94,23 +94,28 @@
     </q-header>
     <q-dialog v-model="settingsDialog" persistent>
       <q-card style="min-width: 350px">
+        <img
+          alt="Quasar logo"
+          src="~assets/YottaDB_logo.svg"
+          style="max-width:50vw"
+        />
         <q-card-section>
-          <div class="text-h6">Settings</div>
-          <div>Change the settings below only if you'd like 
-            to access the system management remotely or 
-            thru the native app. Otherwise, please leave blank.
-             All three fields have to be filled or left blank </div>
+          <div class="text-h6">Connection Info</div>
+          <div>
+            The setting below are needed so that the app can connect to the
+            server
+          </div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
           <q-input
             v-model="ip"
             outlined
-            label="IP"
+            label="IP*"
             :dense="true"
-            hint="192.168.1.5"
+            hint="Server IP. e.g. 192.168.1.5"
             :rules="[
-              val => ValidateIPaddress(val) || 'Please type a valid IP, or leave blank!'
+              val => ValidateIPaddress(val) || 'Please type a valid IP!'
             ]"
           />
         </q-card-section>
@@ -118,33 +123,38 @@
           <q-input
             v-model="port"
             outlined
-            label="Port"
+            label="Port*"
             :dense="true"
-            hint="8089"
+            hint="Server port. e.g. 8089"
             :rules="[
-              val => (val === '' || parseInt(val)> 0 && parseInt(val) < 999999) || 'Please type a valid Port, or leave blank!'
+              val =>
+                (parseInt(val) > 0 && parseInt(val) < 999999) ||
+                'Please type a valid Port!'
             ]"
           />
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-select
             outlined
-            :options="['http','https']"
-            label="Protocol"
+            :options="['http', 'https']"
+            label="Protocol*"
             v-model="protocol"
-            :value="''"
             :dense="true"
-            :hint="'http'"
+            :hint="'Connection protocol'"
           />
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="Cancel" color="warning" @click="settingsDialog = false" />
-          <q-btn flat label="OK" @click="setSettings" />
+          <q-btn
+            flat
+            :disable="checkingConnection"
+            :label="checkingConnection ? 'Checking connection...' : 'OK'"
+            @click="setSettings"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-page-container>
+    <q-page-container v-if="(settingsEntered && isElectron) || !isElectron">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -155,16 +165,18 @@ export default {
   name: "MyLayout",
   data() {
     return {
-      settingsDialog:false,
-      ip: '',
-      protocol:'',
-      port:'',
+      checkingConnection: false,
+      settingsDialog: false,
+      ip: "",
+      protocol: "http",
+      port: "",
       theme: "light",
       lang: this.$i18n.locale,
       langOptions: [
         { value: "en-us", label: "EN" },
         { value: "de", label: "DE" }
-      ]
+      ],
+      settingsEntered: false
     };
   },
   created() {
@@ -174,46 +186,85 @@ export default {
     } else {
       this.$q.dark.set(false);
     }
-    if (this.$q.localStorage.getItem('ydb-app-ip') 
-       && this.$q.localStorage.getItem('ydb-app-port') 
-       && this.$q.localStorage.getItem('ydb-app-protocol') 
-    ){
-      this.ip = this.$q.localStorage.getItem('ydb-app-ip') 
-      this.port = this.$q.localStorage.getItem('ydb-app-port') 
-      this.protocol = this.$q.localStorage.getItem('ydb-app-protocol') 
-       let details = {
-          ip: this.ip,
-          port: this.port,
-          protocol: this.protocol
-        }
-      this.$store.dispatch('app/setAppDetails', details)
+    if (
+      this.$q.localStorage.getItem("ydb-app-ip") &&
+      this.$q.localStorage.getItem("ydb-app-port") &&
+      this.$q.localStorage.getItem("ydb-app-protocol")
+    ) {
+      this.ip = this.$q.localStorage.getItem("ydb-app-ip");
+      this.port = this.$q.localStorage.getItem("ydb-app-port");
+      this.protocol = this.$q.localStorage.getItem("ydb-app-protocol");
+      let details = {
+        ip: this.ip,
+        port: this.port,
+        protocol: this.protocol
+      };
+      this.$store.dispatch("app/setAppDetails", details);
+      this.settingsEntered = true;
+    } else if (this.isElectron) {
+      setTimeout(() => {
+        this.settingsDialog = true;
+      }, 1000);
     }
   },
   methods: {
-    setSettings(){
-      if (this.port && this.ip && this.protocol){
+    async setSettings() {
+      if (this.port && this.ip && this.protocol) {
         let details = {
           ip: this.ip,
           port: this.port,
           protocol: this.protocol
+        };
+        this.$q.localStorage.set("ydb-app-ip", this.ip);
+        this.$q.localStorage.set("ydb-app-port", this.port);
+        this.$q.localStorage.set("ydb-app-protocol", this.protocol);
+        this.$store.dispatch("app/setAppDetails", details);
+        this.checkingConnection = true;
+        let data = await this.$M("PING^YDBWEBAPI");
+        if (!data || !data.RESULT || data.RESULT !== "PONG") {
+          this.checkingConnection = false;
+          this.$q.notify({
+            message: "Connection failed!",
+            color: "negative"
+          });
+          let details = {
+            ip: "",
+            port: "",
+            protocol: ""
+          };
+          this.$q.localStorage.set("ydb-app-ip", "");
+          this.$q.localStorage.set("ydb-app-port", "");
+          this.$q.localStorage.set("ydb-app-protocol", "");
+          this.$store.dispatch("app/setAppDetails", details);
+          return;
+        } else {
+          this.checkingConnection = false;
+          this.$q.notify({
+            message: "Connection succeeded!",
+            color: "positive"
+          });
         }
-        this.$q.localStorage.set('ydb-app-ip', this.ip)
-        this.$q.localStorage.set('ydb-app-port', this.port)
-        this.$q.localStorage.set('ydb-app-protocol', this.protocol)
-        this.$store.dispatch('app/setAppDetails', details)
       } else {
+        this.$q.notify({
+          message:
+            "Please enter the IP, Port and Protocol to connect to the server",
+          color: "negative"
+        });
+        return;
+        /*
         this.port = '',
         this.protocol = '',
         this.ip = ''
         this.$q.localStorage.set('ydb-app-ip', '')
         this.$q.localStorage.set('ydb-app-port', '')
         this.$q.localStorage.set('ydb-app-protocol', '')
+      */
       }
-      this.settingsDialog = false
-      location.reload(true)
+      this.settingsDialog = false;
+      location.reload(true);
     },
     ValidateIPaddress(ipaddress) {
-      if (ipaddress === "localhost" || ipaddress === "") {
+      if (ipaddress === "localhost") {
         return true;
       } else if (
         /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
@@ -239,6 +290,11 @@ export default {
   watch: {
     lang(lang) {
       this.$i18n.locale = lang;
+    }
+  },
+  computed: {
+    isElectron() {
+      return process.env.MODE === "electron";
     }
   }
 };

@@ -1,21 +1,41 @@
 <template>
   <div class="q-pa-md" id="globalsDiv">
     <div style="padding:5px">
-     <q-breadcrumbs gutter="xs">
-      <q-breadcrumbs-el label="Home" />
-      <q-breadcrumbs-el label="System Explorer" />
-      <q-breadcrumbs-el label="Globals" />
+      <q-breadcrumbs gutter="xs">
+        <q-breadcrumbs-el label="Home" />
+        <q-breadcrumbs-el label="System Explorer" />
+        <q-breadcrumbs-el label="Globals" />
+        <q-breadcrumbs-el
+          v-if="!showLoadedNodesBanner && loadedNodesMessage"
+          :label="loadedNodesMessage"
+        />
       </q-breadcrumbs>
+      <transition
+        appear
+        enter-active-class="animated fadeIn"
+        leave-active-class="animated fadeOut"
+      >
+        <q-page-sticky v-show="loadedNodesMessage.indexOf('out of')>0" position="top" :offset="[18, 18]">
+          <q-banner  dense class="text-white bg-red" v-show="showLoadedNodesBanner">
+          {{ loadedNodesMessage }}
+        </q-banner>
+          </q-page-sticky>
+ 
+      </transition>
     </div>
+        <transition
+        enter-active-class="animated fadeIn"
+        leave-active-class="animated fadeOut"
+      >
     <q-splitter
       v-model="splitterModel"
-      style="height:89vh"
+      style="height:86vh"
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
-         <span class="text-center" style="font-size:28px;padding:25px">
-        Gloabsl
-      </span>
+        <span class="text-center" style="font-size:28px;padding:5px">
+          Globals
+        </span>
         <q-infinite-scroll
           @load="loadMoreGlobals"
           :offset="0"
@@ -64,7 +84,11 @@
                 v-for="(glbl, index) in shownGlobalList"
                 :key="'glist-' + index"
               >
-                <q-item clickable @click="populateGlobal(glbl)" :active="getCurrentActiveGlobal(glbl.g)">
+                <q-item
+                  clickable
+                  @click="filteredGlbl='';populateGlobal(glbl);"
+                  :active="getCurrentActiveGlobal(glbl.g)"
+                >
                   <q-item-section>
                     <q-item-label>{{ glbl.g }}</q-item-label>
                   </q-item-section>
@@ -96,9 +120,66 @@
       </template>
 
       <template v-slot:after>
-        <h1>HI</h1>
+        <div class="q-pa-md q-col-gutter-sm">
+          <div
+            v-if="loadingNodes"
+            class="flex items-center justify-center"
+            style="height:80vh;"
+          >
+            <q-spinner-hourglass
+              :color="$q.dark.isActive ? 'purple' : 'orange'"
+              size="10em"
+            />
+          </div>
+          <div class="row">
+            <div class="col-8" style="padding:5px" v-show="!loadingNodes">
+              <q-input
+                filled
+                bottom-slots
+                v-model="filteredGlbl"
+                label="Globals Filter"
+                :dense="true"
+                @keydown.enter="populateGlobal(selectedGlbl)"
+              >
+                <template v-slot:append>
+                  <q-icon
+                    v-if="filteredGlbl !== ''"
+                    name="close"
+                    @click="filteredGlbl = '';populateGlobal(selectedGlbl)"
+                    class="cursor-pointer"
+                  />
+                  <q-icon
+                    name="search"
+                    class="cursor-pointer"
+                    @click="populateGlobal(selectedGlbl)"
+                  />
+                </template>
+              </q-input>
+            </div>
+            <div class="col-4" style="padding:5px" v-show="!loadingNodes">
+              <q-select
+               @input="populateGlobal(selectedGlbl)"
+                dense
+                filled
+                v-model="nodesPagingSize"
+                :options="[100, 1000, 10000]"
+                label="Number of nodes to show"
+              />
+            </div>
+          </div>
+          <div class="row" v-show="!loadingNodes">
+            <q-tree
+              :nodes="globalNodes"
+              default-expand-all
+              node-key="label"
+              :selected.sync="selectedGlblNode"
+              @lazy-load="onLazyLoadGlobalNodes"
+            />
+          </div>
+        </div>
       </template>
     </q-splitter>
+        </transition>
     <q-dialog v-model="loadingDialog" persistent>
       <q-card style="height:185px;width:300px">
         <q-card-section class="q-pa-md">
@@ -121,37 +202,48 @@
   </div>
 </template>
 <script>
-
 export default {
   name: "Globals",
   data() {
     return {
+      selectedGlblNode: "",
+      globalNodes: [],
       splitterModel: 15,
       searchGlobals: "*",
       shownGlobalList: [],
       shownGlobalIndex: 0,
       globalPatchCount: 100,
       finishedLoadingAllGlobals: false,
-      currentActiveGlobal:'',
-      currentActivePath:'',
+      currentActiveGlobal: "",
+      currentActivePath: "",
       globalsList: [],
       globalsPaths: [],
       loading: false,
       loadingDialog: false,
-      globalTotal: 0
+      globalTotal: 0,
+      loadingNodes: false,
+      loadedNodesMessage: "",
+      showLoadedNodesBanner: false,
+      selectedGlbl: "",
+      filteredGlbl: "",
+      nodesPagingSize: 100
     };
   },
   methods: {
-    getCurrentActiveGlobal(glbl){
-        return this.currentActiveGlobal === glbl
+    onLazyLoadGlobalNodes(node) {
+      console.log('key',node.key)
+      console.log('done',node.done)
+      node.done([])
+    },
+    getCurrentActiveGlobal(glbl) {
+      return this.currentActiveGlobal === glbl;
     },
     loadMoreGlobals(index, done) {
       this.shownGlobalIndex = index;
       for (
         let i = this.shownGlobalIndex * this.globalPatchCount;
         i <
-        this.shownGlobalIndex * this.globalPatchCount +
-          this.globalPatchCount;
+        this.shownGlobalIndex * this.globalPatchCount + this.globalPatchCount;
         i++
       ) {
         if (this.globalsList[i]) {
@@ -165,28 +257,59 @@ export default {
       done();
       this.$refs.infscroll.stop();
     },
-    async populateGlobal(glbl){
-      let data = await this.$M('POPULATEGLOBALS^YDBWEBGLBLS',{
-        GLBL: glbl.g
-      })
-        if (data.STATUS){
-          this.currentActiveGlobal  = glbl.g
-        } else {
-          this.$q.notify({
-            message:'Global could not be found!',
-            color:'negative'
-          })
+    async populateGlobal(glbl) {
+      this.selectedGlbl = glbl;
+      this.loadedNodesMessage = "";
+      let done = false;
+      setTimeout(() => {
+        if (done) {
+          return;
         }
+        this.loadingNodes = true;
+      }, 1000);
+      let data = await this.$M("POPULATEGLOBALS^YDBWEBGLBLS", {
+        GLBL: glbl.g,
+        SEARCH: this.filteredGlbl,
+        SIZE:this.nodesPagingSize
+      });
+      done = true;
+      this.loadingNodes = false;
+      if (data.STATUS) {
+        this.currentActiveGlobal = glbl.g;
+        this.globalNodes = data.NODES;
+
+        if (data.MESSAGE && data.MESSAGE.indexOf('out of')>0) {
+          this.loadedNodesMessage = data.MESSAGE;
+          this.showLoadedNodesBanner = true;
+          setTimeout(() => {
+            this.showLoadedNodesBanner = false;
+          }, 5000);
+        } else if (data.MESSAGE && data.MESSAGE){
+            this.loadedNodesMessage = data.MESSAGE;
+        }
+      } else {
+        this.globalNodes = []
+        this.$q.notify({
+          message: "Globals could not be found!",
+          color: "negative"
+        });
+      }
     },
     async getGlobals() {
       if (!this.searchGlobals.length) {
         return;
       }
-      this.loadingDialog = true;
+      let done = false;
+      setTimeout(() => {
+        if (done) {
+          return;
+        }
+        this.loading = true;
+        this.loadingDialog = true;
+      }, 1000);
       this.shownGlobalList = [];
       this.shownGlobalIndex = 0;
       this.finishedLoadingAllGlobals = false;
-      this.loading = true;
       let data = await this.$M("GETGLOBALSLIST^YDBWEBGLBLS", {
         PATTERN: this.searchGlobals
       });
@@ -203,8 +326,7 @@ export default {
       for (
         let i = this.shownGlobalIndex * this.globalPatchCount;
         i <
-        this.shownGlobalIndex * this.globalPatchCount +
-          this.globalPatchCount;
+        this.shownGlobalIndex * this.globalPatchCount + this.globalPatchCount;
         i++
       ) {
         if (this.globalsList[i]) {
@@ -213,6 +335,7 @@ export default {
           this.finishedLoadingAllGlobals = true;
         }
       }
+      done = true;
       this.loading = false;
       this.loadingDialog = false;
     },
@@ -239,11 +362,10 @@ export default {
   },
   async mounted() {
     await this.getGlobals();
-    if (this.shownGlobalList[0]){
-      this.populateGlobal(this.shownGlobalList[0])
+    if (this.shownGlobalList[0]) {
+      this.populateGlobal(this.shownGlobalList[0]);
     }
   }
 };
 </script>
-<style>
-</style>
+<style></style>

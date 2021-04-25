@@ -17,3 +17,6 @@ API(%Q,%R,%A)
 	K @%R D ENCODE^YDBWEB("%J",%R)
 	Q
 	;
+PING(I,O)
+	S O("data","RESULT")="PONG"
+	Q
