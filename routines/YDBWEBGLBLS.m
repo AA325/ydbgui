@@ -16,14 +16,14 @@ GETGLOBALSLIST(I,O)
 	. I $I(C) D
 	. . S @R@("GLIST",C,"g")=A
 	. . I GLBLS(A)]"" S PATHS(GLBLS(A))=""
-	s @R@("GTOTAL")=$G(GLBLS,0)
+	s @R@("GTOTAL")=$G(C,0)
 	Q
 	;
 POPULATEGLOBALS(I,O)
 	;
 	N R S R=$NA(O("data"))
 	N G S G=$G(I("data","GLBL"))
-	N S S S=$G(I("data","SIZE")) I S="" S S=1000
+	N S S S=$G(I("data","SIZE")) I S="" S S=100
 	N SR S SR=$G(I("data","SEARCH"))
 	I G="" S @R@("STATUS")="false" Q
 	I '$D(@G) S @R@("STATUS")="false" Q

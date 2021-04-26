@@ -29,7 +29,7 @@
       >
     <q-splitter
       v-model="splitterModel"
-      style="height:86vh"
+      style="height:calc(100vh - 125px)"
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
@@ -72,7 +72,7 @@
               <q-item>
                 <q-item-section>
                   <q-item-label overline
-                    >{{ globalTotal }} Globals</q-item-label
+                    >{{ globalTotal }} Global(s)</q-item-label
                   >
                   <!--
                   <q-item-label
@@ -124,7 +124,7 @@
           <div
             v-if="loadingNodes"
             class="flex items-center justify-center"
-            style="height:80vh;"
+            style="height:calc(100vh - 125px);"
           >
             <q-spinner-hourglass
               :color="$q.dark.isActive ? 'purple' : 'orange'"
@@ -137,7 +137,7 @@
                 filled
                 bottom-slots
                 v-model="filteredGlbl"
-                label="Globals Filter"
+                label="Globals Search"
                 :dense="true"
                 @keydown.enter="populateGlobal(selectedGlbl)"
               >
@@ -199,6 +199,25 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+          <q-drawer
+        side="right"
+        v-model="globalRightDrawer"
+        @hide="selectedGlblNode=''"
+        bordered
+        :width="600"
+        overlay
+        content-class=""
+      >  
+        <q-bar>
+          <q-icon name="laptop_chromebook" />
+          <div>Google Chrome</div>
+          <q-space />
+          <q-btn dense flat icon="minimize" />
+          <q-btn dense flat icon="crop_square" />
+          <q-btn dense flat icon="close" />
+        </q-bar>
+      </q-drawer>
+      
   </div>
 </template>
 <script>
@@ -206,6 +225,7 @@ export default {
   name: "Globals",
   data() {
     return {
+      globalRightDrawer:false,
       selectedGlblNode: "",
       globalNodes: [],
       splitterModel: 15,
@@ -230,10 +250,42 @@ export default {
     };
   },
   methods: {
-    onLazyLoadGlobalNodes(node) {
-      console.log('key',node.key)
-      console.log('done',node.done)
-      node.done([])
+    async onLazyLoadGlobalNodes(node) {
+    // this.selectedGlbl = glbl;
+      this.loadedNodesMessage = "";
+      let done = false;
+      setTimeout(() => {
+        if (done) {
+          return;
+        }
+        this.loadingNodes = true;
+      }, 1000);
+      let data = await this.$M("POPULATEGLOBALS^YDBWEBGLBLS", {
+        GLBL: node.key,
+        SEARCH: this.filteredGlbl,
+        SIZE:this.nodesPagingSize
+      });
+      done = true;
+      this.loadingNodes = false;
+      if (data.STATUS) {
+        // this.currentActiveGlobal = glbl.g;
+        node.done(data.NODES)
+        if (data.MESSAGE && data.MESSAGE.indexOf('out of')>0) {
+          this.loadedNodesMessage = data.MESSAGE;
+          this.showLoadedNodesBanner = true;
+          setTimeout(() => {
+            this.showLoadedNodesBanner = false;
+          }, 5000);
+        } else if (data.MESSAGE && data.MESSAGE){
+            this.loadedNodesMessage = data.MESSAGE;
+        }
+      } else {
+         node.done([])
+        this.$q.notify({
+          message: "Globals could not be found!",
+          color: "negative"
+        });
+      }
     },
     getCurrentActiveGlobal(glbl) {
       return this.currentActiveGlobal === glbl;
@@ -350,6 +402,13 @@ export default {
     }
   },
   watch: {
+      selectedGlblNode(v){
+      if (v){
+        this.globalRightDrawer = true
+      } else {
+        this.globalRightDrawer = false
+      }
+    },
     splitterModel(v) {
       this.$q.localStorage.set("ydb-globals-splitter", v);
     }

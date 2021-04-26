@@ -11,7 +11,7 @@
     </div>
     <q-splitter
       v-model="splitterModel"
-      style="height:87vh"
+      style="height:calc(100vh - 121px)"
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
@@ -312,6 +312,6 @@ export default {
 @import "../../../node_modules/codemirror/theme/abcdef.css";
 .CodeMirror {
   border: 1px solid #eee;
-  height: 87vh;
+  height: calc(100vh - 121px);
 }
 </style>
