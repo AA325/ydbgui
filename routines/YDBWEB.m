@@ -184,7 +184,6 @@ ETSOCK
 ETCODE
 	S $ETRAP="G ETBAIL^YDBWEB"
 	I $TLEVEL TROLLBACK
-	L
 	D LOGERR,SETERROR(501,"Log ID:"_HTTPLOG("ID")),RSPERROR,SENDATA
 	S $ETRAP="Q:$ESTACK&$QUIT 0 Q:$ESTACK  S $ECODE="""" G NEXT"
 	Q
@@ -193,7 +192,9 @@ ETDC
 	HALT
 ETBAIL
 	U %WTCP
-	W "HTTP/1.1 500 Internal Server Error",$C(13,10),$C(13,10),!
+	W "HTTP/1.1 500 Internal Server Error-",$C(13,10),$C(13,10),!
+	;W "HTTP/1.1 500 Internal Server Error-",$C(13,10)
+	;W "X-Server-Error: "_$ZSTATUS_$C(13,10)_$C(13,10),!
 	C %WTCP
 	HALT
 INCRLOG
@@ -293,6 +294,7 @@ FLUSH
 	S %WBUFF=""
 	Q
 RSPERROR
+	S HTTPRSP("header","X-Server-Error")=$ZSTATUS
 	Q
 RSPLINE()
 	I $D(HTTPRSP("partial")) Q "HTTP/1.1 206 Partial Content"
@@ -476,7 +478,6 @@ ESC(X)
 	. S X=Y,Y=$P(X,FROM) F I=2:1:$L(X,FROM) S Y=Y_"\"_TO_$P(X,FROM,I)
 	Q Y
 ERRX(ID,VAL)
-	b
 	N ERRMSG
 	I ID="STL{" S ERRMSG="Stack too large for new object." G XERRX
 	I ID="SUF}" S ERRMSG="Stack Underflow - extra } found" G XERRX

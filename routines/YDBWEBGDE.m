@@ -99,8 +99,7 @@ get(HTTPREQ,HTTPRSP,HTTPARGS)
 	d inttobool(.result)
 	; encode the result
 	d ENCODE^YDBWEB("result",HTTPRSP,"ERR")
-	i $d(ERR) D SETERROR^YDBWEB(201) quit
-	quit
+	q
 ;
 ; Delete given global directory element(s)
 ;
@@ -133,9 +132,8 @@ delete(HTTPREQ,HTTPRSP,HTTPARGS)
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	n attr,filetype,gdeputzs,gdexcept,maxs,record,ref,sreg,tempfile
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q ;D SETERROR^YDBWEB(301,"BODY") quit ""
+	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q 
 	d DECODE^YDBWEB(HTTPREQ("body"),"JSON","ERR")
-	i $d(ERR) D SETERROR^YDBWEB(202) quit ""
 	;
 	; setup required variables
 	s gdequiet=1
@@ -156,7 +154,7 @@ delete(HTTPREQ,HTTPRSP,HTTPARGS)
 	. . d deleteone(.item)
 	e  d deleteone(.JSON)
 	; Perform verification
-	i '$d(gdeweberror),$$ALL^GDEVERIF,$$GDEPUT^GDEPUT d
+	i '$d(gdeweberror),$$ALL^GDEVERIF,$$GDEPUT^GDEPUT d  I 1
 	. s verifyStatus="true"
 	; We didn't pass validation OR couldn't save the global directory
 	e  s verifyStatus="false",getMapData="" ; null value instead of empty string for getMapData?
@@ -166,8 +164,7 @@ delete(HTTPREQ,HTTPRSP,HTTPARGS)
 	m RSLT("getMapData")=getMapData
 	m RSLT("errors")=gdeweberror
 	d ENCODE^YDBWEB("RSLT",HTTPRSP,"ERR")
-	i $d(ERR) D SETERROR^YDBWEB(201) quit ""
-	quit ""
+	quit
 ;
 ; Internal line tag for delete line tag that deletes a single item from the global directory. ;
 ; This requires a verification and put to save the changes to the global directory. ;
@@ -202,7 +199,18 @@ deleteone(JSON)
 ; s BODY="{""names"":{""ZZYOTTADB2(1:3)"":""TEMP""}}"
 ; s STATUS=$$save^GDEWEB(.ARGS,.BODY,.RESULT)
 ;
+DEBUG
+	M ^HTTPREQ=^A
+	S HTTPREQ("body")="%AAA"
+	M %AAA=^B
+	D save(.HTTPREQ,.HTTPRSP,"")
+	Q
+	;	
+	;
 save(HTTPREQ,HTTPRSP,HTTPARGS)
+	K ^A,^B
+	M ^A=HTTPREQ
+	M ^B=@HTTPREQ("body")
 	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
 	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
@@ -221,9 +229,8 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	n attr,filetype,gdeputzs,gdexcept,maxs,record,ref,sreg,tempfile
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q ;D SETERROR^YDBWEB(301,"BODY") quit ""
+	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q
 	d DECODE^YDBWEB(HTTPREQ("body"),"JSON","ERR")
-	i $d(ERR) D SETERROR^YDBWEB(202) quit ""
 	;
 	; setup required variables
 	s gdequiet=1
@@ -300,8 +307,7 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	s result("verifyStatus")=verifyStatus
 	m result("errors")=gdeweberror
 	d ENCODE^YDBWEB("result",HTTPRSP,"ERR")
-	i $d(ERR) D SETERROR^YDBWEB(201) quit ""
-	quit ""
+	quit
 ;
 ; Verify a given global directory
 ;
@@ -333,9 +339,8 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	n tfile,tmpacc,tmpreg,tmpseg,tokens,typevalue,update,upper,v30,v44,v532
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q ;D SETERROR^YDBWEB(301,"BODY") quit ""
+	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q
 	d DECODE^YDBWEB(HTTPREQ("body"),"JSON","ERR")
-	i $d(ERR) D SETERROR^YDBWEB(202) quit ""
 	;
 	; setup required variables
 	s gdequiet=1
@@ -444,8 +449,7 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	e  s RSLT("verifyStatus")="false"
 	m RSLT("errors")=gdeweberror
 	d ENCODE^YDBWEB("RSLT",HTTPRSP,"ERR")
-	i $d(ERR) D SETERROR^YDBWEB(201) quit ""
-	quit ""
+	quit
 ;
 ; =========================================================================
 ; Common functions
@@ -734,4 +738,84 @@ createnamearray(name)
 	. s key=$$gvn2gds^GDEMAP("^"_NAME,coll)
 	. d keylencheck^GDEPARSE(NAME,key,coll)
 	quit
+	;
+ADDSEGMENTANDFILE(I,O)
+	N SEGMENT,FILE,YDBDIST,OFILE,R
+	S R=$NA(O("data"))
+	S SEGMENT=$$UP^YDBUTILS($G(I("data","SEGMENT")))
+	S FILE=$G(I("data","FILE"))
+	S YDBDIST=$ZTRNLNM("ydb_dist")
+	I '$$DirectoryExists^YDBUTILS("/tmp"),'$$CreateDirectoryTree^YDBUTILS("/tmp") D  Q
+	. S @R@("STATUS")="false"
+	. S @R@("ERROR")="Could not create /tmp"
+	S OFILE="/tmp/gde_add_"_$J
+	O OFILE:(newversion:chset="M")
+	U OFILE
+	W "#!/bin/bash",!
+	W "#Script to add segment for "_SEGMENT,!
+	W "ydb_dist="_YDBDIST,!
+	W "$ydb_dist/yottadb -r ^GDE <<DONE",!!
+	W "add -segment "_SEGMENT_" -file="_FILE,!
+	W "add -region  "_SEGMENT_" -dynamic="_SEGMENT,!
+	W "add -name "_SEGMENT_"   -region="_SEGMENT,!
+	W "exit",!
+	W "DONE",!
+	C OFILE
+	ZSY "chmod +x "_OFILE
+	N A d RunShellCommand^YDBUTILS(OFILE,.A)
+	ZSY "rm "_OFILE
+	M @R@("RESULT")=A
+	S @R@("STATUS")="true"
+	Q
+	;	
+DELSEGMENTANDFILE(I,O)
+	N SEGMENT,FILE,YDBDIST,OFILE,R
+	S R=$NA(O("data"))
+	S SEGMENT=$$UP^YDBUTILS($G(I("data","SEGMENT")))
+	S YDBDIST=$ZTRNLNM("ydb_dist")
+	I '$$DirectoryExists^YDBUTILS("/tmp"),'$$CreateDirectoryTree^YDBUTILS("/tmp") D  Q
+	. S @R@("STATUS")="false"
+	. S @R@("ERROR")="Could not create /tmp"
+	S OFILE="/tmp/gde_delete_"_$J
+	O OFILE:(newversion:chset="M")
+	U OFILE
+	W "#!/bin/bash",!
+	W "#Script to delete segment for "_SEGMENT,!
+	W "ydb_dist="_YDBDIST,!
+	W "$ydb_dist/yottadb -r ^GDE <<DONE",!!
+	W "delete -segment "_SEGMENT,!
+	W "delete -region  "_SEGMENT,!
+	W "delete -name "_SEGMENT,!
+	W "exit",!
+	W "DONE",!
+	C OFILE
+	ZSY "chmod +x "_OFILE
+	N A d RunShellCommand^YDBUTILS(OFILE,.A)
+	ZSY "rm "_OFILE
+	M @R@("RESULT")=A
+	S @R@("STATUS")="true"
+	Q
+	;
+CREATEREGION(I,O)
+	N REGION,FILE,YDBDIST,OFILE,R
+	S R=$NA(O("data"))
+	S REGION=$$UP^YDBUTILS($G(I("data","REGION")))
+	S YDBDIST=$ZTRNLNM("ydb_dist")
+	I '$$DirectoryExists^YDBUTILS("/tmp"),'$$CreateDirectoryTree^YDBUTILS("/tmp") D  Q
+	. S @R@("STATUS")="false"
+	. S @R@("ERROR")="Could not create /tmp"
+	S OFILE="/tmp/gde_create_"_$J
+	O OFILE:(newversion:chset="M")
+	U OFILE
+	W "#!/bin/bash",!
+	W "#Script to create region for "_REGION,!
+	W "ydb_dist="_YDBDIST,!
+	W "$ydb_dist/mupip create -region="_REGION,!
+	C OFILE
+	ZSY "chmod +x "_OFILE
+	N A d RunShellCommand^YDBUTILS(OFILE,.A)
+	ZSY "rm "_OFILE
+	M @R@("RESULT")=A
+	S @R@("STATUS")="true"
+	Q
 	;

@@ -12,3 +12,6 @@ GetGlobalList(GLBLS,PATTERN)	D GetGlobalList^YDBUTILS2(.GLBLS,.PATTERN) Q
 FileExists(PATH)				Q $$FileExists^YDBUTILS2(.PATH)
 ReadFileByLine(FILE,RET)		D ReadFileByLine^YDBUTILS2(.FILE,.RET) Q
 ReadFileByChunk(FILE,CHUNK,RET) D ReadFileByChunk^YDBUTILS2(.FILE,.CHUNK,.RET) Q
+UP(STR)							Q $$UP^YDBUTILS2(.STR)
+LOW(STR)						Q $$LOW^YDBUTILS2(.STR)
+	;							
