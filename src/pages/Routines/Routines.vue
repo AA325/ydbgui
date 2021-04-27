@@ -1,5 +1,9 @@
 <template>
   <div class="q-pa-md" id="routinesDiv">
+            <q-page-sticky position="top-right" :offset="[10, 10]">
+            <q-btn fab icon="save" padding="xs" :color="$q.dark.isActive ? 'purple' : 'orange'" />
+           <!-- <q-btn fab icon="delete" padding="xs" :color="'red'" /> -->
+          </q-page-sticky>
     <div style="padding:5px">
      <q-breadcrumbs gutter="xs">
       <q-breadcrumbs-el label="Home" />
@@ -7,7 +11,6 @@
       <q-breadcrumbs-el label="Routines" />
       <q-breadcrumbs-el :label="(currentActivePath + currentActiveRoutine) ? currentActivePath + currentActiveRoutine + '.m':''" />
     </q-breadcrumbs>
-    
     </div>
     <q-splitter
       v-model="splitterModel"
@@ -99,6 +102,7 @@
 
       <template v-slot:after>
         <codemirror
+          id="codeMirrorRoutines"
           v-if="code.length > 0"
           ref="cmEditor"
           :value="code"
@@ -107,6 +111,8 @@
           @focus="onCmFocus"
           @input="onCmCodeChange"
         />
+
+
       </template>
     </q-splitter>
     <q-dialog v-model="loadingDialog" persistent>
@@ -151,7 +157,6 @@ export default {
       currentActivePath:'',
       code: "",
       cmOptions: {
-        readOnly:true,
         tabSize: 4,
         mode: {
           name: "mumps"
@@ -258,13 +263,10 @@ export default {
       this.loadingDialog = false;
     },
     onCmReady(cm) {
-      // console.log("the editor is readied!", cm);
     },
     onCmFocus(cm) {
-      // console.log("the editor is focused!", cm);
     },
     onCmCodeChange(newCode) {
-      // console.log("this is new code", newCode);
       this.code = newCode;
     },
     loadMoreScrolledRoutines() {
@@ -310,7 +312,7 @@ export default {
 <style>
 @import "../../../node_modules/codemirror/lib/codemirror.css";
 @import "../../../node_modules/codemirror/theme/abcdef.css";
-.CodeMirror {
+#codeMirrorRoutines > .CodeMirror {
   border: 1px solid #eee;
   height: calc(100vh - 121px);
 }

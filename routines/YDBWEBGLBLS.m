@@ -61,3 +61,48 @@ SETNODES
 	S @R@("NODES",C,"selectable")="true"
 	Q
 	;
+GETGLOBALVALUE(I,O)
+	N R,G
+	S R=$NA(O("data"))
+	S G=$G(I("data","GLOBAL"))
+	I G="" S @R@("STATUS")="false" Q
+	I '$D(@G) S @R@("STATUS")="false" Q
+	S @R@("VALUE")=$G(@G)
+	I $D(@G)=1 S @R@("ICON")="text_snippet"
+	I $D(@G)=10 S @R@("ICON")="folder"
+	I $D(@G)=11 S @R@("ICON")="source"
+	S @R@("STATUS")="true"
+	Q
+	;
+SAVEGLOBAL(I,O)
+	N G,V,R
+	S R=$NA(O("data"))
+	S G=$G(I("data","GLOBAL")) I G="" S @R@("STATUS")="false" Q
+	I '$D(I("data","VALUE")) S @R@("STATUS")="false" Q
+	S V=I("data","VALUE")
+	S @G=V
+	I $D(@G)=1 S @R@("ICON")="text_snippet"
+	I $D(@G)=10 S @R@("ICON")="folder"
+	I $D(@G)=11 S @R@("ICON")="source"
+	S @R@("STATUS")="true"
+	Q
+	;
+KILLGLOBAL(I,O)
+	N G,V,R
+	S R=$NA(O("data"))
+	S G=$G(I("data","GLOBAL")) I G="" S @R@("STATUS")="false" Q
+	K @G
+	S @R@("STATUS")="true"
+	Q
+	;
+ZKILLLOBAL(I,O)
+	N G,V,R
+	S R=$NA(O("data"))
+	S G=$G(I("data","GLOBAL")) I G="" S @R@("STATUS")="false" Q
+	ZK @G
+	I $D(@G)=1 S @R@("ICON")="text_snippet"
+	I $D(@G)=10 S @R@("ICON")="folder"
+	I $D(@G)=11 S @R@("ICON")="source"
+	S @R@("STATUS")="true"
+	Q
+	;	

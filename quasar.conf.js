@@ -107,6 +107,7 @@ module.exports = function (/* ctx */) {
       plugins: [
         'Notify',
         'LocalStorage',
+        'Dialog'
       ]
     },
 
@@ -114,7 +115,7 @@ module.exports = function (/* ctx */) {
     // https://v1.quasar.dev/options/animations
     animations: [
       'fadeIn',
-      'fadeOut',
+      'fadeOut'
     ],
 
     // https://v1.quasar.dev/quasar-cli/developing-ssr/configuring-ssr

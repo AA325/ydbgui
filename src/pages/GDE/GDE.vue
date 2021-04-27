@@ -696,7 +696,7 @@
  </q-dialog>
  <q-dialog v-model="addStatusDialog">
       <q-card>
-        <q-bar class="bg-primary">
+        <q-bar :class="!$q.dark.isActive ? 'bg-purple' : 'bg-orange'">
           <span class="text-white">Status</span>
           <q-space />
         </q-bar>
@@ -741,7 +741,7 @@
  </q-dialog>
  <q-dialog v-model="delStatusDialog">
       <q-card>
-        <q-bar class="bg-primary">
+        <q-bar :class="!$q.dark.isActive ? 'bg-purple' : 'bg-orange'">
           <span class="text-white">Status</span>
           <q-space />
         </q-bar>
@@ -786,7 +786,7 @@
  </q-dialog>
  <q-dialog v-model="createStatusDialog">
       <q-card>
-        <q-bar class="bg-primary">
+        <q-bar :class="!$q.dark.isActive ? 'bg-purple' : 'bg-orange'">
           <span class="text-white">Status</span>
           <q-space />
         </q-bar>
