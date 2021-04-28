@@ -471,10 +471,32 @@ NUMERIC(X)
 	I X=+X Q 1
 	Q 0
 ESC(X)
+	N Y,%DH
+	S Y=X
+	I X["\"  S Y=$$REPLACE(Y,"\","\\")
+	I X["""" S Y=$$REPLACE(Y,"""","\""")
+	I X["/"  S Y=$$REPLACE(Y,"/","\/")
+	I X[$C(8) S Y=$$REPLACE(Y,$C(8),"\"_$C(98))
+	I X[$C(12) S Y=$$REPLACE(Y,$C(12),"\"_$C(102))
+	I X[$C(10) S Y=$$REPLACE(Y,$C(10),"\"_$C(110))
+	I X[$C(13) S Y=$$REPLACE(Y,$C(13),"\"_$C(114))
+	I X[$C(9) S Y=$$REPLACE(Y,$C(9),"\"_$C(116))
+	N I F I=1:1:$L(X) D
+	. I $A($E(X,I))>=33 Q
+	. I $A($E(X,I))<126 Q
+	. I $A($E(X,I))=8   Q 
+	. I $A($E(X,I))=12  Q 
+	. I $A($E(X,I))=10  Q 
+	. I $A($E(X,I))=13  Q 
+	. I $A($E(X,I))=9   Q 
+	. S %DH=$A($E(X,I))
+	. D ^%DH
+	. S Y=$$REPLACE(Y,$E(X,I),"\u"_$E(%DH,$L(%DH)-3,$L(%DH)))
+	Q Y 
 	N Y,I,PAIR,FROM,TO
 	S Y=X
-	F PAIR="\\","""""","//",$C(8,98),$C(12,102),$C(10,110),$C(13,114),$C(9,116) D
-	. S FROM=$E(PAIR),TO=$E(PAIR,2)
+	F PAIR="\\","""""","//",$C(0)_"u000",$C(8,98),$C(12,102),$C(10,110),$C(13,114),$C(9,116) D
+	. S FROM=$E(PAIR),TO=$E(PAIR,2,$L(PAIR))
 	. S X=Y,Y=$P(X,FROM) F I=2:1:$L(X,FROM) S Y=Y_"\"_TO_$P(X,FROM,I)
 	Q Y
 ERRX(ID,VAL)
@@ -653,6 +675,7 @@ UES(X)
 	. E  S Y=Y_$E(X,START,POS-2)_$$REALCHAR($E(X,POS),X,.POS)
 	Q Y
 REALCHAR(C,X,POS)
+	N OPOS
 	I C="""" Q """"
 	I C="/" Q "/"
 	I C="\" Q "\"
@@ -661,11 +684,12 @@ REALCHAR(C,X,POS)
 	I C="n" Q $C(10)
 	I C="r" Q $C(13)
 	I C="t" Q $C(9)
-	I C="u",$E(X,POS+1,POS+4)="001a" S POS=POS+4 Q $C(10)
-	I C="u",$E(X,POS+1,POS+4)="000b" S POS=POS+4 Q $C(11)
-	I C="u",$E(X,POS+1,POS+4)="001c" S POS=POS+4 Q $C(28)
-	I C="u",$E(X,POS+1,POS+3)="000",$E(X,POS+4)?1N.NN S POS=POS+4 Q $C($E(X,POS))
-	I $L($G(VVERR)) D ERRX("ESC",$E(X,POS,POS+4))
+	I C="u" S OPOS=POS S POS=POS+4 Q $C($$FUNC^%HD($E(X,OPOS+1,OPOS+4)))
+	;I C="u",$E(X,POS+1,POS+4)="001a" S POS=POS+4 Q $C(10)
+	;I C="u",$E(X,POS+1,POS+4)="000b" S POS=POS+4 Q $C(11)
+	;I C="u",$E(X,POS+1,POS+4)="001c" S POS=POS+4 Q $C(28)
+	;I C="u",$E(X,POS+1,POS+3)="000",$E(X,POS+4)?1N.NN S POS=POS+4 Q $C($E(X,POS))
+	;I $L($G(VVERR)) D ERRX("ESC",$E(X,POS,POS+4))
 	Q C
 	;
 HASH(X)
@@ -843,3 +867,10 @@ DECODE64(X) ;
 	.S RGZ1=RGZ1_RGZ6
 	Q $E(RGZ1,1,$L(RGZ1)-$L(X,"=")+1)
 INIT64() Q "=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+		;
+REPLACE(s,f,t)
+	i $tr(s,f)=s q s
+	n o,i s o="" f i=1:1:$l(s,f)  s o=o_$s(i<$l(s,f):$p(s,f,i)_t,1:$p(s,f,i))
+	q o
+	;
+	;
