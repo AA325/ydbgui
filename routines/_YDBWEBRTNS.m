@@ -48,4 +48,34 @@ SAVEROUTINE(I,O)
 	D WriteFile^%YDBUTILS(PATH_RTN_".m",.DATA)
 	S @R@("STATUS")="true"
 	Q
+	;
+GETROUTINEPATHS(I,O)
+	N A,R
+	S R=$NA(O("data"))
+	D RoutinePaths^%YDBUTILS(.A)
+	I '$D(A) S @R@("STATUS")="false" Q
+	M @R@("PATHS")=A S @R@("STATUS")="true"
+	Q
 	;	
+CREATENEWROUTINE(I,O)
+	N RTN,PATH,R
+	S R=$NA(O("data"))
+	S RTN=$G(I("data","ROUTINE")) I RTN="" S @R@("STATUS")="false" Q
+	S PATH=$G(I("data","PATH")) I PATH="" S @R@("STATUS")="false" Q
+	I $E(RTN)="%" S $E(RTN)="_"
+	I $$FileExists^%YDBUTILS(PATH_"/"_RTN_".m") S @R@("STATUS")="false" Q
+	I '$$DirectoryExists^%YDBUTILS(PATH) S @R@("STATUS")="false" Q
+	N A S A(1)=I("data","ROUTINE")
+	D WriteFile^%YDBUTILS(PATH_"/"_RTN_".m",.A)
+	S @R@("STATUS")="true" 
+	Q
+	;
+DELETEROUTINE(I,O)
+	N R,DATA,F,RTN,PATH
+	S RTN=$G(I("data","ROUTINE")) I RTN=""  S @R@("STATUS")="false" Q
+	S PATH=$G(I("data","PATH")) I PATH=""  S @R@("STATUS")="false" Q
+	S R=$NA(O("data"))
+	I $E(RTN)="%" S $E(RTN)="_"
+	D DeleteFile^%YDBUTILS(PATH_RTN_".m")
+	S @R@("STATUS")="true"
+	Q

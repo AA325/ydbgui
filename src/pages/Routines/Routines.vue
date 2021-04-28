@@ -3,6 +3,13 @@
     <q-page-sticky position="top-right" :offset="[20, 3]">
       <q-btn
         fab
+        icon="delete"
+        @click="deleteRoutine"
+        padding="sm"
+        :color="'negative'"
+      />
+      <q-btn
+        fab
         icon="save"
         @click="saveRoutine"
         padding="sm"
@@ -156,6 +163,46 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="createRoutineDialog" persistent>
+      <q-card style="width:300px">
+        <q-card-section class="q-pa-md">
+          <span style="font-size:18px;" class="flex flex-center"
+            >Create New Routine</span
+          >
+        </q-card-section>
+        <q-card-section>
+          <q-input
+            outlined
+            v-model="newRoutineName"
+            label="Routine Name*"
+            dense
+            ref="newRoutineField"
+            lazy-rules
+            :rules="[val => checkRoutineName(val) || 'Invalid routine name']"
+          />
+          <q-select
+            lazy-rules
+            ref="pathField"
+            :rules="[val => val.length > 0 || 'Routine location is required!']"
+            dense
+            filled
+            v-model="newRoutinePath"
+            :value="newRoutinePath[0]"
+            :options="newRoutinePaths"
+            label="Routine Location*"
+          />
+        </q-card-section>
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="Cancel"
+            color="warning"
+            @click="cancelCreateNewRoutine"
+          />
+          <q-btn flat label="OK" @click="createNewRoutine" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 <script>
@@ -169,6 +216,10 @@ export default {
   },
   data() {
     return {
+      newRoutinePath: "",
+      newRoutinePaths: [],
+      newRoutineName: "",
+      createRoutineDialog: false,
       splitterModel: 10,
       searchRoutines: "%YDB*",
       shownRoutineList: [],
@@ -187,10 +238,10 @@ export default {
         lineNumbers: true,
         line: true,
         extraKeys: {
-        "Ctrl-S": async instance => {
-          await this.saveRoutine();
+          "Ctrl-S": async instance => {
+            await this.saveRoutine();
+          }
         }
-      }
       },
       routinesList: [],
       routinesPaths: [],
@@ -200,6 +251,26 @@ export default {
     };
   },
   methods: {
+    checkRoutineName(value) {
+      let valid = true;
+      if (!value) {
+        return false;
+      }
+      let dict = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split(
+        ""
+      );
+      let digits = "0123456789".split("");
+      let fulldict = dict.concat(digits);
+      let valueArr = value.split("");
+      for (let i = 0; i < valueArr.length; i++) {
+        if (i === 0 && !dict.includes(valueArr[i]) && valueArr[i] !== "%") {
+          valid = false;
+        } else if (i > 0 && !fulldict.includes(valueArr[i])) {
+          valid = false;
+        }
+      }
+      return valid;
+    },
     getCurrentActiveRoutine(rtn) {
       return this.currentActiveRoutine === rtn;
     },
@@ -317,6 +388,93 @@ export default {
           color: "negative"
         });
       }
+    },
+    async deleteRoutine() {
+      this.$q
+        .dialog({
+          title: "Delete Routine",
+          message:
+            "Are you sure you want to delete " +
+            this.currentActivePath +
+            this.currentActiveRoutine,
+          cancel: true,
+          persistent: true
+        })
+        .onOk(async () => {
+          let data = await this.$M("DELETEROUTINE^%YDBWEBRTNS", {
+            ROUTINE: this.currentActiveRoutine,
+            PATH: this.currentActivePath
+          });
+          if (data.STATUS) {
+            this.$q.notify({
+              message: "Routine deleted!",
+              color: "positive"
+            });
+            await this.getRoutines();
+            if (this.shownRoutineList[0]) {
+              this.populateRoutine(this.shownRoutineList[0]);
+            }
+          } else {
+            this.$q.notify({
+              message: "Routine could not be deleted!",
+              color: "negative"
+            });
+          }
+        });
+    },
+    async createRoutine() {
+      let data = await this.$M("GETROUTINEPATHS^%YDBWEBRTNS");
+      if (data && data.STATUS) {
+        this.newRoutinePaths = data.PATHS;
+        this.createRoutineDialog = true;
+        this.newRoutinePath = data.PATHS[0];
+      } else {
+        this.$q.notify({
+          message: "Could not get routine paths!",
+          color: "negative"
+        });
+      }
+    },
+    async createNewRoutine() {
+      this.$refs.newRoutineField.validate();
+      this.$refs.pathField.validate();
+
+      if (
+        this.$refs.newRoutineField.hasError ||
+        this.$refs.pathField.hasError
+      ) {
+        this.$q.notify({
+          message: "Please enter a valid routine name and location",
+          color: "negative"
+        });
+        return;
+      } else {
+        let data = await this.$M("CREATENEWROUTINE^%YDBWEBRTNS", {
+          ROUTINE: this.newRoutineName,
+          PATH: this.newRoutinePath
+        });
+        if (data && data.STATUS) {
+          this.$q.notify({
+            color: "positive",
+            message: "Routine: " + this.newRoutineName + " created successfully"
+          });
+          await this.getRoutines();
+          if (this.shownRoutineList[0]) {
+            this.populateRoutine(this.shownRoutineList[0]);
+          }
+          this.createRoutineDialog = false;
+          this.newRoutineName = "";
+        } else {
+          this.$q.notify({
+            message: "Routine could not be created. It might already exists",
+            color: "negative"
+          });
+        }
+      }
+    },
+    cancelCreateNewRoutine() {
+      this.createRoutineDialog = false;
+      this.newRoutineName = "";
     }
   },
   computed: {

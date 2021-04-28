@@ -15,6 +15,8 @@ ReadFileByChunk(FILE,CHUNK,RET) D ReadFileByChunk^%YDBUTILS2(.FILE,.CHUNK,.RET) 
 WriteFile(FILE,DATA)			D WriteFile^%YDBUTILS2(.FILE,.DATA) Q
 UP(STR)							Q $$UP^%YDBUTILS2(.STR)
 LOW(STR)						Q $$LOW^%YDBUTILS2(.STR)
-RoutinePaths(RET)				D RoutinePaths^%YDBUTILS1(.RET) Q	
+RoutinePaths(RET)				D RoutinePaths^%YDBUTILS1(.RET) Q
+DeleteFile(FILE)				D DeleteFile^%YDBUTILS1(.FILE) Q
 	;							
+	;
 	;
