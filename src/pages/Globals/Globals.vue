@@ -148,7 +148,7 @@
                   filled
                   bottom-slots
                   v-model="filteredGlbl"
-                  label="Globals Search"
+                  label="Globals Subscript Search"
                   :dense="true"
                   @keydown.enter="populateGlobal(selectedGlbl)"
                 >

@@ -7,6 +7,7 @@
         @click="deleteRoutine"
         padding="sm"
         :color="'negative'"
+        style="margin-right:15px"
       />
       <q-btn
         fab
@@ -14,6 +15,7 @@
         @click="saveRoutine"
         padding="sm"
         :color="$q.dark.isActive ? 'purple' : 'orange'"
+        style="margin-right:15px"
       />
       <q-btn
         fab

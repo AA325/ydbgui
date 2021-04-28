@@ -29,7 +29,7 @@
           v-if="$q.screen.gt.xs"
           class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center "
         >
-          <q-btn-dropdown flat label="System Administration" dense>
+          <q-btn-dropdown flat label="System Management" dense>
             <q-list>
               <q-item clickable v-close-popup :to="'/gde'">
                 <q-item-section>
