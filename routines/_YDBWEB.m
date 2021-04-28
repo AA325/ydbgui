@@ -493,12 +493,7 @@ ESC(X)
 	. D ^%DH
 	. S Y=$$REPLACE(Y,$E(X,I),"\u"_$E(%DH,$L(%DH)-3,$L(%DH)))
 	Q Y 
-	N Y,I,PAIR,FROM,TO
-	S Y=X
-	F PAIR="\\","""""","//",$C(0)_"u000",$C(8,98),$C(12,102),$C(10,110),$C(13,114),$C(9,116) D
-	. S FROM=$E(PAIR),TO=$E(PAIR,2,$L(PAIR))
-	. S X=Y,Y=$P(X,FROM) F I=2:1:$L(X,FROM) S Y=Y_"\"_TO_$P(X,FROM,I)
-	Q Y
+	;
 ERRX(ID,VAL)
 	N ERRMSG
 	I ID="STL{" S ERRMSG="Stack too large for new object." G XERRX
@@ -685,11 +680,6 @@ REALCHAR(C,X,POS)
 	I C="r" Q $C(13)
 	I C="t" Q $C(9)
 	I C="u" S OPOS=POS S POS=POS+4 Q $C($$FUNC^%HD($E(X,OPOS+1,OPOS+4)))
-	;I C="u",$E(X,POS+1,POS+4)="001a" S POS=POS+4 Q $C(10)
-	;I C="u",$E(X,POS+1,POS+4)="000b" S POS=POS+4 Q $C(11)
-	;I C="u",$E(X,POS+1,POS+4)="001c" S POS=POS+4 Q $C(28)
-	;I C="u",$E(X,POS+1,POS+3)="000",$E(X,POS+4)?1N.NN S POS=POS+4 Q $C($E(X,POS))
-	;I $L($G(VVERR)) D ERRX("ESC",$E(X,POS,POS+4))
 	Q C
 	;
 HASH(X)
