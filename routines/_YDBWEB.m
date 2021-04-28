@@ -101,7 +101,7 @@ JOB(TCPPORT)
 	N CHILDSOCK  ; That will be set below; Child socket
 LOOP
 	D  G LOOP
-	. F  W /WAIT(10) Q:$KEY]""
+	. F  W /WAIT(5) Q:$KEY]""
 	. I $P($KEY,"|")="CONNECT" D 
 	. . S CHILDSOCK=$P($KEY,"|",2)
 	. . U TCPIO:(detach=CHILDSOCK)
@@ -251,7 +251,7 @@ SENDATA
 	I RSPTYPE=1 S SIZE=$$VARSIZE(.HTTPRSP)
 	I RSPTYPE=2 S SIZE=$$REFSIZE(.HTTPRSP)
 	D W($$RSPLINE()_$C(13,10))
-	D W("Date: "_$$GMT_$C(13,10))
+	;D W("Date: "_$$GMT_$C(13,10))
 	I $D(HTTPREQ("Content-Disposition")) D
 	.  D W("Content-Disposition: "_HTTPREQ("Content-Disposition")_$C(13,10))
 	I $D(HTTPREQ("X-Accel-Redirect")) D

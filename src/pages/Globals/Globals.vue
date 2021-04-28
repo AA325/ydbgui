@@ -229,9 +229,9 @@
         selectedGlblNode = '';
       "
       bordered
-      :width="600"
+      :width="800"
       overlay
-      content-class="width:600px"
+      content-class="width:800px"
     >
       <q-card style="height:100%">
         <q-bar
@@ -726,7 +726,7 @@ export default {
 @import "../../../node_modules/codemirror/theme/abcdef.css";
 #codeMirrorGlobals > .CodeMirror {
   border: 1px solid #eee;
-  height: calc(100vh - 600px);
+  height: calc(100vh - 430px);
 }
 .wraptext,
 pre {
