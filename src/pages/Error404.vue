@@ -28,8 +28,22 @@
     </q-header>
 
     <q-page-container style="max-width:1920px;margin:0 auto">
-      <div class="text-center q-pa-md flex flex-center" style="padding:250px">
+      <div class="text-center q-pa-md flex flex-center">
     <div>
+         <div class="row flex flex-center q-pa-md" :style="'padding-top:50px'">
+    <img
+      v-if="!$q.dark.isActive"
+      alt="Quasar logo"
+      src="~assets/YottaDB_logo-light.svg"
+      style="max-width:35vw"
+    >
+    <img
+      v-if="$q.dark.isActive"
+      alt="Quasar logo"
+      src="~assets/YottaDB_logo-dark.svg"
+      style="max-width:35vw"
+    >
+    </div>
       <div style="font-size: 30vh">
         404
       </div>

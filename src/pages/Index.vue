@@ -2,8 +2,15 @@
   <q-page>
     <div class="row flex flex-center q-pa-md" :style="'padding-top:50px'">
     <img
+      v-if="!$q.dark.isActive"
       alt="Quasar logo"
-      src="~assets/YottaDB_logo.svg"
+      src="~assets/YottaDB_logo-light.svg"
+      style="max-width:35vw"
+    >
+    <img
+      v-if="$q.dark.isActive"
+      alt="Quasar logo"
+      src="~assets/YottaDB_logo-dark.svg"
       style="max-width:35vw"
     >
     </div>

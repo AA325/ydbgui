@@ -4,7 +4,7 @@
       <q-breadcrumbs gutter="xs">
       <q-breadcrumbs-el label="Home" />
       <q-breadcrumbs-el label="System Administration" />
-      <q-breadcrumbs-el label="Global Directory Editor" />
+      <q-breadcrumbs-el label="Global Directory Editor (GDE)" />
     </q-breadcrumbs>
       <span class="text-center" style="font-size:28px;padding:25px"
         >Global Directory Editor (GDE)</span

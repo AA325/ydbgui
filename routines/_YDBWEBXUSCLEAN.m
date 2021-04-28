@@ -4,8 +4,8 @@ H	;;Exit point for all R/S applications
 	LOCK  ;Unlock any locks
 	S U="^"
 	;Unwind Exit Actions
-	I $D(^%YDBWEB("YDBWEBZSY","XQ",$J,"T")) S %XQEA=^("T") D
-	. F %XQEA1=%XQEA:-1:1 I $D(^%YDBWEB("YDBWEBZSY","XQ",$J,%XQEA1)),$P(^(%XQEA1),U,16) S %XQEA2=+^(%XQEA1) I $D(^DIC(19,%XQEA2,15)),$L(^(15)) X ^(15)
+	I $D(^YDBWEB("YDBWEBZSY","XQ",$J,"T")) S %XQEA=^("T") D
+	. F %XQEA1=%XQEA:-1:1 I $D(^YDBWEB("YDBWEBZSY","XQ",$J,%XQEA1)),$P(^(%XQEA1),U,16) S %XQEA2=+^(%XQEA1) I $D(^DIC(19,%XQEA2,15)),$L(^(15)) X ^(15)
 	K %XQEA,%XQEA1,%XQEA2
 	;Jump if the home device was closed
 	G:$D(IO("C")) H2
@@ -29,13 +29,13 @@ H2	;No talking after this point
 	G HALT^ZU
 	;
 TOUCH	;SR. API to set the keepalive node, Only set once a day
-	Q:+$G(^%YDBWEB("YDBWEBZSY","XQ",$J,"KEEPALIVE"))=+$H
-	S ^%YDBWEB("YDBWEBZSY","XQ",$J,"KEEPALIVE")=$H
+	Q:+$G(^YDBWEB("YDBWEBZSY","XQ",$J,"KEEPALIVE"))=+$H
+	S ^YDBWEB("YDBWEBZSY","XQ",$J,"KEEPALIVE")=$H
 	Q
 	;
 C	;Do device close execute, User exit. ;
 	N XUDEV
-	S XUDEV=$S($D(^%YDBWEB("YDBWEBZSY","XQ",$J,"IOS")):^("IOS"),1:"")
+	S XUDEV=$S($D(^YDBWEB("YDBWEBZSY","XQ",$J,"IOS")):^("IOS"),1:"")
 	D ^%ZISC,BYE
 	Q
 	;
@@ -43,11 +43,11 @@ C	;Do device close execute, User exit. ;
 BYE	;Set flags to show user has left. Called from anyplace the user exits
 	N DA,DIK,R0,%
 	I $G(^VA(200,+$G(DUZ),1.1)) S $P(^VA(200,DUZ,1.1),"^",3)=0
-	S DA=+$G(^%YDBWEB("YDBWEBZSY","XQ",$J,0)) D LOUT(DA)
+	S DA=+$G(^YDBWEB("YDBWEBZSY","XQ",$J,0)) D LOUT(DA)
 	I $D(^XUSEC(0,DA,0)) D
 	. S R0=^XUSEC(0,DA,0)
 	. I $G(IO("IP"))]"",$P(R0,"^",13)]"" S %=$$CMD^XWBCAGNT(.R0,"XWB DELETE HANDLE",$P(R0,"^",13))
-	K ^%YDBWEB("YDBWEBZSY","XQ",$J)
+	K ^YDBWEB("YDBWEBZSY","XQ",$J)
 	Q
 	;
 LOUT(DA)	;Enter log-out time, in Sign-on log
@@ -58,11 +58,11 @@ LOUT(DA)	;Enter log-out time, in Sign-on log
 	;
 XUTL	;Cleanup JOB temporary Globals
 	N XQN D CLEAN^DILF ;Cleanup FM too. ;
-	K ^%YDBWEB("YDBWEBZSY",$J),^UTILITY($J),^TMP($J)
-	S XQN=" " F  S XQN=$O(^%YDBWEB("YDBWEBZSY",XQN)) Q:XQN=""  K:"^XQO^XGATR^XGKB^"'[XQN ^%YDBWEB("YDBWEBZSY",XQN,$J)
+	K ^YDBWEB("YDBWEBZSY",$J),^UTILITY($J),^TMP($J)
+	S XQN=" " F  S XQN=$O(^YDBWEB("YDBWEBZSY",XQN)) Q:XQN=""  K:"^XQO^XGATR^XGKB^"'[XQN ^YDBWEB("YDBWEBZSY",XQN,$J)
 	S XQN=" " F  S XQN=$O(^TMP(XQN)) Q:XQN=""  K ^TMP(XQN,$J)
 	S XQN=" " F  S XQN=$O(^UTILITY(XQN)) Q:XQN=""  K:"^ROU^GLO^LRLTR"'[XQN ^UTILITY(XQN,$J)
-	K ^%YDBWEB("YDBWEBZSY","ZISPARAM",$I)
+	K ^YDBWEB("YDBWEBZSY","ZISPARAM",$I)
 	Q
 	;
 NEWCODE	;Remind user they changed there VC. ;
@@ -70,9 +70,9 @@ NEWCODE	;Remind user they changed there VC. ;
 	;
 	;Entry point to clear symbol table
 KILL	;SR. This is what was requested. ;
-	K %1,%2,%3 S %3=+$G(^%YDBWEB("YDBWEBZSY","XQ",$J,"T"))
+	K %1,%2,%3 S %3=+$G(^YDBWEB("YDBWEBZSY","XQ",$J,"T"))
 	;See if Menu stack has Variable to protect. ;
-	F %1=%3:-1:1 S %2=+$G(^%YDBWEB("YDBWEBZSY","XQ",$J,%1)),%2=$G(^DIC(19,%2,"NOKILL")) I %2]"" N @%2
+	F %1=%3:-1:1 S %2=+$G(^YDBWEB("YDBWEBZSY","XQ",$J,%1)),%2=$G(^DIC(19,%2,"NOKILL")) I %2]"" N @%2
 	;Fall into next part of kill. ;
 KILL1	;To clean up ALL but kernel variables. ;
 	I $$BROKER^XWBLIB S %2=$P($T(VARLST^XWBLIB),";;",2) I %2]"" N @%2 ;Protect Broker variables. ;
@@ -86,4 +86,5 @@ KILL1	;To clean up ALL but kernel variables. ;
 XMR	;Entry point from XUS to DO xmr and cleanup after. ;
 	N XQXFLG ;p434
 	D NEXT^XUS1 S XQXFLG="",XQXFLG("HALT")=1 G H2
+	;
 	;

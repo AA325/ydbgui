@@ -1,7 +1,7 @@
 <template>
   <q-layout :class="$q.dark.isActive ? 'bg-banner-dark' : 'bg-banner-light'">
     <q-header
-      v-if="(settingsEntered && isElectron) || !isElectron"
+      v-if="(settingsEntered && isNotSPA) || !isNotSPA"
       elevated
       class="text-white"
       height-hint="61.59"
@@ -79,7 +79,7 @@
             </template>
           </q-select>
           <q-btn
-            v-if="isElectron"
+            v-if="isNotSPA"
             dense
             flat
             round
@@ -101,9 +101,16 @@
     <q-dialog v-model="settingsDialog" persistent>
       <q-card style="min-width: 350px">
         <img
+          v-if="!$q.dark.isActive"
           alt="Quasar logo"
-          src="~assets/YottaDB_logo.svg"
-          style="max-width:50vw"
+          src="~assets/YottaDB_logo-light.svg"
+          style="max-width:50vw;padding:10px"
+        />
+        <img
+          v-if="$q.dark.isActive"
+          alt="Quasar logo"
+          src="~assets/YottaDB_logo-dark.svg"
+          style="max-width:50vw;padding:10px"
         />
         <q-card-section>
           <div class="text-h6">Connection Info</div>
@@ -160,7 +167,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-page-container v-if="(settingsEntered && isElectron) || !isElectron">
+    <q-page-container v-if="(settingsEntered && isNotSPA) || !isNotSPA">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -207,7 +214,7 @@ export default {
       };
       this.$store.dispatch("app/setAppDetails", details);
       this.settingsEntered = true;
-    } else if (this.isElectron) {
+    } else if (this.isNotSPA) {
       setTimeout(() => {
         this.settingsDialog = true;
       }, 1000);
@@ -299,8 +306,8 @@ export default {
     }
   },
   computed: {
-    isElectron() {
-      return process.env.MODE === "electron";
+    isNotSPA() {
+      return process.env.MODE !== "spa";
     }
   }
 };
