@@ -92,6 +92,7 @@
                   :key="'glist-' + index"
                 >
                   <q-item
+                    dense
                     clickable
                     @click="
                       filteredGlbl = '';
@@ -183,11 +184,17 @@
             <div class="row" v-show="!loadingNodes">
               <q-tree
                 :nodes="globalNodes"
-                default-expand-all
-                node-key="label"
+                node-key="key"
                 :selected.sync="selectedGlblNode"
                 @lazy-load="onLazyLoadGlobalNodes"
-              />
+                icon="arrow_forward_ios"
+              >
+                <template v-slot:default-body="prop">
+                  <span class="text-primary">
+                    {{ prop.node.story }}
+                  </span>
+                </template>
+              </q-tree>
             </div>
           </div>
         </template>
@@ -227,7 +234,12 @@
       content-class="width:600px"
     >
       <q-card style="height:100%">
-        <q-bar :class="!$q.dark.isActive ? 'bg-purple text-white':'bg-orange text-white'" color="white">
+        <q-bar
+          :class="
+            !$q.dark.isActive ? 'bg-purple text-white' : 'bg-orange text-white'
+          "
+          color="white"
+        >
           Global Node Value
           <q-space />
           <q-btn
@@ -243,11 +255,9 @@
             "
           />
         </q-bar>
-        <q-card-section class="col-5 flex flex-center">
-          <q-icon :name="codeIcon" style="font-size: 5rem;" />
-        </q-card-section>
         <q-card-section>
-          <pre v-html="selectedGlblNode"></pre>
+          <q-icon :name="codeIcon" style="font-size: 5rem;" />
+          <span class="wraptext">{{ selectedGlblNode }}</span>
         </q-card-section>
         <q-card-section>
           <codemirror
@@ -312,6 +322,7 @@ export default {
   data() {
     return {
       codeIcon: "",
+      updatedNodeValue:"",
       globalRightDrawer: false,
       selectedGlblNode: "",
       globalNodes: [],
@@ -350,6 +361,7 @@ export default {
   },
   methods: {
     async onLazyLoadGlobalNodes(node) {
+      console.log(node);
       // this.selectedGlbl = glbl;
       this.loadedNodesMessage = "";
       let done = false;
@@ -359,7 +371,7 @@ export default {
         }
         this.loadingNodes = true;
       }, 1000);
-      let data = await this.$M("POPULATEGLOBALS^YDBWEBGLBLS", {
+      let data = await this.$M("POPULATEGLOBALS^%YDBWEBGLBLS", {
         GLBL: node.key,
         SEARCH: this.filteredGlbl,
         SIZE: this.nodesPagingSize
@@ -375,7 +387,7 @@ export default {
           setTimeout(() => {
             this.showLoadedNodesBanner = false;
           }, 5000);
-        } else if (data.MESSAGE && data.MESSAGE) {
+        } else if (data.MESSAGE) {
           this.loadedNodesMessage = data.MESSAGE;
         }
       } else {
@@ -418,7 +430,7 @@ export default {
         }
         this.loadingNodes = true;
       }, 1000);
-      let data = await this.$M("POPULATEGLOBALS^YDBWEBGLBLS", {
+      let data = await this.$M("POPULATEGLOBALS^%YDBWEBGLBLS", {
         GLBL: glbl.g,
         SEARCH: this.filteredGlbl,
         SIZE: this.nodesPagingSize
@@ -461,7 +473,7 @@ export default {
       this.shownGlobalList = [];
       this.shownGlobalIndex = 0;
       this.finishedLoadingAllGlobals = false;
-      let data = await this.$M("GETGLOBALSLIST^YDBWEBGLBLS", {
+      let data = await this.$M("GETGLOBALSLIST^%YDBWEBGLBLS", {
         PATTERN: this.searchGlobals
       });
       if (data && data.GTOTAL) {
@@ -497,7 +509,7 @@ export default {
     async getSelectedGlobalValue(global) {
       let code = "";
       let icon = "";
-      let data = await this.$M("GETGLOBALVALUE^YDBWEBGLBLS", {
+      let data = await this.$M("GETGLOBALVALUE^%YDBWEBGLBLS", {
         GLOBAL: global
       });
       if (data && data.STATUS) {
@@ -525,7 +537,7 @@ export default {
           persistent: true
         })
         .onOk(async () => {
-          let data = await this.$M("SAVEGLOBAL^YDBWEBGLBLS", {
+          let data = await this.$M("SAVEGLOBAL^%YDBWEBGLBLS", {
             GLOBAL: this.selectedGlblNode,
             VALUE: this.code
           });
@@ -535,11 +547,11 @@ export default {
               color: "positive"
             });
             this.updateIcon(data.ICON);
+            this.updateValue(this.code)
             this.globalRightDrawer = false;
             this.code = "";
             this.codeIcon = "";
             this.selectedGlblNode = "";
-            
           } else {
             this.$q.notify({
               message: "Error ocurred. Global not saved!",
@@ -558,7 +570,7 @@ export default {
           persistent: true
         })
         .onOk(async () => {
-          let data = await this.$M("ZKILLLOBAL^YDBWEBGLBLS", {
+          let data = await this.$M("ZKILLLOBAL^%YDBWEBGLBLS", {
             GLOBAL: this.selectedGlblNode
           });
           if (data && data.STATUS) {
@@ -567,11 +579,11 @@ export default {
               color: "positive"
             });
             this.updateIcon(data.ICON);
+            this.updateValue('')
             this.globalRightDrawer = false;
             this.code = "";
             this.codeIcon = "";
             this.selectedGlblNode = "";
-            
           } else {
             this.$q.notify({
               message: "Error ocurred. Global not ZKILLED!",
@@ -589,7 +601,7 @@ export default {
           persistent: true
         })
         .onOk(async () => {
-          let data = await this.$M("KILLGLOBAL^YDBWEBGLBLS", {
+          let data = await this.$M("KILLGLOBAL^%YDBWEBGLBLS", {
             GLOBAL: this.selectedGlblNode
           });
           if (data && data.STATUS) {
@@ -623,14 +635,31 @@ export default {
     },
     updateIcon(icon) {
       let self = this;
-      let nodes = this.globalNodes
+      let nodes = this.globalNodes;
       function parseObjectProperties(obj) {
         for (var k in obj) {
           if (typeof obj[k] === "object" && obj[k] !== null) {
             parseObjectProperties(obj[k]);
           } else if (obj.hasOwnProperty(k)) {
-            if (k === "nodeKey" && obj[k] === self.selectedGlblNode) {
-              obj['icon'] = icon
+            if (k === "key" && obj[k] === self.selectedGlblNode) {
+              obj["icon"] = icon;
+            }
+          }
+        }
+      }
+      parseObjectProperties(nodes);
+      this.globalNodes = nodes;
+    },
+    updateValue(value){
+      let self = this;
+      let nodes = this.globalNodes;
+      function parseObjectProperties(obj) {
+        for (var k in obj) {
+          if (typeof obj[k] === "object" && obj[k] !== null) {
+            parseObjectProperties(obj[k]);
+          } else if (obj.hasOwnProperty(k)) {
+            if (k === "key" && obj[k] === self.selectedGlblNode) {
+              obj["story"] = value;
             }
           }
         }
@@ -697,8 +726,9 @@ export default {
 @import "../../../node_modules/codemirror/theme/abcdef.css";
 #codeMirrorGlobals > .CodeMirror {
   border: 1px solid #eee;
-  height: calc(100vh - 525px);
+  height: calc(100vh - 600px);
 }
+.wraptext,
 pre {
   white-space: pre-wrap; /* Since CSS 2.1 */
   white-space: -moz-pre-wrap; /* Mozilla, since 1999 */

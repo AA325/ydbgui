@@ -1,16 +1,35 @@
 <template>
   <div class="q-pa-md" id="routinesDiv">
-            <q-page-sticky position="top-right" :offset="[10, 10]">
-            <q-btn fab icon="save" padding="xs" :color="$q.dark.isActive ? 'purple' : 'orange'" />
-           <!-- <q-btn fab icon="delete" padding="xs" :color="'red'" /> -->
-          </q-page-sticky>
+    <q-page-sticky position="top-right" :offset="[20, 3]">
+      <q-btn
+        fab
+        icon="save"
+        @click="saveRoutine"
+        padding="sm"
+        :color="$q.dark.isActive ? 'purple' : 'orange'"
+      />
+      <q-btn
+        fab
+        icon="add"
+        @click="createRoutine"
+        padding="sm"
+        :color="'primary'"
+      />
+      <!-- <q-btn fab icon="delete" padding="xs" :color="'red'" /> -->
+    </q-page-sticky>
     <div style="padding:5px">
-     <q-breadcrumbs gutter="xs">
-      <q-breadcrumbs-el label="Home" />
-      <q-breadcrumbs-el label="System Explorer" />
-      <q-breadcrumbs-el label="Routines" />
-      <q-breadcrumbs-el :label="(currentActivePath + currentActiveRoutine) ? currentActivePath + currentActiveRoutine + '.m':''" />
-    </q-breadcrumbs>
+      <q-breadcrumbs gutter="xs">
+        <q-breadcrumbs-el label="Home" />
+        <q-breadcrumbs-el label="System Explorer" />
+        <q-breadcrumbs-el label="Routines" />
+        <q-breadcrumbs-el
+          :label="
+            currentActivePath + currentActiveRoutine
+              ? currentActivePath + currentActiveRoutine + '.m'
+              : ''
+          "
+        />
+      </q-breadcrumbs>
     </div>
     <q-splitter
       v-model="splitterModel"
@@ -18,9 +37,9 @@
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
-         <span class="text-center" style="font-size:28px;padding:25px">
-        Routines
-      </span>
+        <span class="text-center" style="font-size:28px;padding:25px">
+          Routines
+        </span>
         <q-infinite-scroll
           @load="loadMoreRoutines"
           :offset="0"
@@ -69,7 +88,12 @@
                 v-for="(rtn, index) in shownRoutineList"
                 :key="'rlist-' + index"
               >
-                <q-item clickable @click="populateRoutine(rtn)" :active="getCurrentActiveRoutine(rtn.r)">
+                <q-item
+                  clickable
+                  @click="populateRoutine(rtn)"
+                  :active="getCurrentActiveRoutine(rtn.r)"
+                  dense
+                >
                   <q-item-section>
                     <q-item-label>{{ rtn.r }}</q-item-label>
                   </q-item-section>
@@ -111,8 +135,6 @@
           @focus="onCmFocus"
           @input="onCmCodeChange"
         />
-
-
       </template>
     </q-splitter>
     <q-dialog v-model="loadingDialog" persistent>
@@ -148,13 +170,13 @@ export default {
   data() {
     return {
       splitterModel: 10,
-      searchRoutines: "YDB*",
+      searchRoutines: "%YDB*",
       shownRoutineList: [],
       shownRoutineIndex: 0,
       routinePatchCount: 100,
       finishedLoadingAllRoutines: false,
-      currentActiveRoutine:'',
-      currentActivePath:'',
+      currentActiveRoutine: "",
+      currentActivePath: "",
       code: "",
       cmOptions: {
         tabSize: 4,
@@ -163,7 +185,12 @@ export default {
         },
         theme: this.$q.dark.isActive ? "abcdef" : "default",
         lineNumbers: true,
-        line: true
+        line: true,
+        extraKeys: {
+        "Ctrl-S": async instance => {
+          await this.saveRoutine();
+        }
+      }
       },
       routinesList: [],
       routinesPaths: [],
@@ -173,8 +200,8 @@ export default {
     };
   },
   methods: {
-    getCurrentActiveRoutine(rtn){
-        return this.currentActiveRoutine === rtn
+    getCurrentActiveRoutine(rtn) {
+      return this.currentActiveRoutine === rtn;
     },
     loadMoreRoutines(index, done) {
       this.shownRoutineIndex = index;
@@ -196,38 +223,40 @@ export default {
       done();
       this.$refs.infscroll.stop();
     },
-    async populateRoutine(rtn){
-      let data = await this.$M('POPULATEROUTINE^YDBWEBRTNS',{
+    async populateRoutine(rtn) {
+      let data = await this.$M("POPULATEROUTINE^%YDBWEBRTNS", {
         RTN: rtn.r,
         PATH: rtn.p
-      })
-        if (data.STATUS){
-          this.code = data.CODE.join('\n')
-          this.currentActiveRoutine  = rtn.r
-          this.currentActivePath = rtn.p
-        } else {
-          this.$q.notify({
-            message:'Routine could not be found!',
-            color:'negative'
-          })
-        }
+      });
+      if (data.STATUS && data.CODE && data.CODE.length > 0) {
+        this.code = data.CODE.join("\n");
+        this.currentActiveRoutine = rtn.r;
+        this.currentActivePath = rtn.p;
+      } else {
+        this.currentActiveRoutine = "";
+        this.currentActivePath = "";
+        this.$q.notify({
+          message: "Routine could not be found!",
+          color: "negative"
+        });
+      }
     },
     async getRoutines() {
       if (!this.searchRoutines.length) {
         return;
       }
-      let done = false
-      setTimeout(()=>{
-        if (done){
-          return
+      let done = false;
+      setTimeout(() => {
+        if (done) {
+          return;
         }
         this.loading = true;
         this.loadingDialog = true;
-      },1000)
+      }, 1000);
       this.shownRoutineList = [];
       this.shownRoutineIndex = 0;
       this.finishedLoadingAllRoutines = false;
-      let data = await this.$M("GETROUTINESLIST^YDBWEBRTNS", {
+      let data = await this.$M("GETROUTINESLIST^%YDBWEBRTNS", {
         PATTERN: this.searchRoutines
       });
       if (data && data.RTOTAL) {
@@ -258,20 +287,36 @@ export default {
           this.finishedLoadingAllRoutines = true;
         }
       }
-      done = true
+      done = true;
       this.loading = false;
       this.loadingDialog = false;
     },
-    onCmReady(cm) {
-    },
-    onCmFocus(cm) {
-    },
+    onCmReady(cm) {},
+    onCmFocus(cm) {},
     onCmCodeChange(newCode) {
       this.code = newCode;
     },
     loadMoreScrolledRoutines() {
       this.$refs.infscroll.resume();
       this.$refs.infscroll.trigger();
+    },
+    async saveRoutine() {
+      let data = await this.$M("SAVEROUTINE^%YDBWEBRTNS", {
+        ROUTINE: this.currentActiveRoutine,
+        PATH: this.currentActivePath,
+        DATA: this.code.split("\n")
+      });
+      if (data.STATUS) {
+        this.$q.notify({
+          message: "Routine saved!",
+          color: "positive"
+        });
+      } else {
+        this.$q.notify({
+          message: "Routine could not be saved!",
+          color: "negative"
+        });
+      }
     }
   },
   computed: {
@@ -303,8 +348,8 @@ export default {
   },
   async mounted() {
     await this.getRoutines();
-    if (this.shownRoutineList[0]){
-      this.populateRoutine(this.shownRoutineList[0])
+    if (this.shownRoutineList[0]) {
+      this.populateRoutine(this.shownRoutineList[0]);
     }
   }
 };

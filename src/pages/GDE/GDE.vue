@@ -7,7 +7,7 @@
       <q-breadcrumbs-el label="Global Directory Editor" />
     </q-breadcrumbs>
       <span class="text-center" style="font-size:28px;padding:25px"
-        >GDE</span
+        >Global Directory Editor (GDE)</span
       >
       
       <q-btn round style="margin-right:10px" size="sm" icon="add"  :color="$q.dark.isActive ? 'purple' : 'orange'"  @click="addDialog = true">
@@ -1257,7 +1257,7 @@ export default {
       }
       this.createStatusMessage=''
       this.createStatusDialog = false
-      let data = await this.$M('CREATEREGION^YDBWEBGDE',{
+      let data = await this.$M('CREATEREGION^%YDBWEBGDE',{
         REGION: this.createSegment.toUpperCase(),
       })
       if (data && data.STATUS && data.RESULT){
@@ -1285,7 +1285,7 @@ export default {
       }
       this.delStatusMessage=''
       this.delStatusDialog = false
-      let data = await this.$M('DELSEGMENTANDFILE^YDBWEBGDE',{
+      let data = await this.$M('DELSEGMENTANDFILE^%YDBWEBGDE',{
         SEGMENT: this.delSegment.toUpperCase(),
       })
       if (data && data.STATUS && data.RESULT){
@@ -1313,7 +1313,7 @@ export default {
       }
       this.addStatusMessage=''
       this.addStatusDialog = false
-      let data = await this.$M('ADDSEGMENTANDFILE^YDBWEBGDE',{
+      let data = await this.$M('ADDSEGMENTANDFILE^%YDBWEBGDE',{
         SEGMENT: this.addSegment.toUpperCase(),
         FILE: this.addFile
       })

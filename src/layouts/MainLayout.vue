@@ -1,5 +1,5 @@
 <template>
-  <q-layout>
+  <q-layout :class="$q.dark.isActive ? 'bg-banner-dark' : 'bg-banner-light'">
     <q-header
       v-if="(settingsEntered && isElectron) || !isElectron"
       elevated
@@ -26,7 +26,8 @@
         </q-btn>
 
         <div
-          class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center no-wrap"
+          v-if="$q.screen.gt.xs"
+          class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center "
         >
           <q-btn-dropdown flat label="System Administration" dense>
             <q-list>
@@ -70,8 +71,13 @@
             emit-value
             map-options
             options-dense
+            label-color="white"
             style="width: 40px"
-          />
+          >
+            <template v-slot:selected-item="scope">
+              <span class="text-white"> {{ scope.opt.label }} </span>
+            </template>
+          </q-select>
           <q-btn
             v-if="isElectron"
             dense
@@ -220,7 +226,7 @@ export default {
         this.$q.localStorage.set("ydb-app-protocol", this.protocol);
         this.$store.dispatch("app/setAppDetails", details);
         this.checkingConnection = true;
-        let data = await this.$M("PING^YDBWEBAPI");
+        let data = await this.$M("PING^%YDBWEBAPI");
         if (!data || !data.RESULT || data.RESULT !== "PONG") {
           this.checkingConnection = false;
           this.$q.notify({
@@ -341,5 +347,13 @@ export default {
 }
 .rotating:hover {
   transform: rotateZ(360deg);
+}
+.bg-banner-light {
+  background-image: url(banner-image-light.jpg);
+  background-size: cover;
+}
+.bg-banner-dark {
+  background-image: url(banner-image-dark.jpg);
+  background-size: cover;
 }
 </style>
