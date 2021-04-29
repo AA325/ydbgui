@@ -208,9 +208,6 @@ DEBUG
 	;	
 	;
 save(HTTPREQ,HTTPRSP,HTTPARGS)
-	K ^A,^B
-	M ^A=HTTPREQ
-	M ^B=@HTTPREQ("body")
 	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
 	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
@@ -818,4 +815,5 @@ CREATEREGION(I,O)
 	M @R@("RESULT")=A
 	S @R@("STATUS")="true"
 	Q
+	;
 	;

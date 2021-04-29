@@ -1,6 +1,5 @@
 %YDBWEBTEST
 	;
 	;
-	F  S
 	Q
 	;

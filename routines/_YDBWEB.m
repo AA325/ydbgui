@@ -465,8 +465,9 @@ ISVALUE(VVROOT,VVSUB)
 	Q:VVX=":" 1
 	Q 0
 NUMERIC(X) 
+	I $L(X,".")>2 Q 0
 	I $E(X,1,2)="-." Q 0
-	I $E(X)="0",$L(X)>1 Q 0
+	I X=+X,$L(X)'=$L(+X) Q 0
 	I $E(X)="." Q 0
 	I X=+X Q 1
 	Q 0
@@ -482,8 +483,7 @@ ESC(X)
 	I X[$C(13) S Y=$$REPLACE(Y,$C(13),"\"_$C(114))
 	I X[$C(9) S Y=$$REPLACE(Y,$C(9),"\"_$C(116))
 	N I F I=1:1:$L(X) D
-	. I $A($E(X,I))>=33 Q
-	. I $A($E(X,I))<126 Q
+	. I ($A($E(X,I))>=33!($A($E(X,I))<126)) Q
 	. I $A($E(X,I))=8   Q 
 	. I $A($E(X,I))=12  Q 
 	. I $A($E(X,I))=10  Q 
@@ -862,5 +862,6 @@ REPLACE(s,f,t)
 	i $tr(s,f)=s q s
 	n o,i s o="" f i=1:1:$l(s,f)  s o=o_$s(i<$l(s,f):$p(s,f,i)_t,1:$p(s,f,i))
 	q o
+	;
 	;
 	;

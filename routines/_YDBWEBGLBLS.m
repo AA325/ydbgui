@@ -92,6 +92,7 @@ SAVEGLOBAL(I,O)
 	I $D(@G)=10 S @R@("ICON")="folder"
 	I $D(@G)=11 S @R@("ICON")="source"
 	S @R@("STATUS")="true"
+	S @R@("VALUE")=$G(@G)
 	Q
 	;
 KILLGLOBAL(I,O)
@@ -113,3 +114,4 @@ ZKILLLOBAL(I,O)
 	S @R@("STATUS")="true"
 	Q
 	;	
+	;

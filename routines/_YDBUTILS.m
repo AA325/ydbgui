@@ -18,5 +18,3 @@ LOW(STR)						Q $$LOW^%YDBUTILS2(.STR)
 RoutinePaths(RET)				D RoutinePaths^%YDBUTILS1(.RET) Q
 DeleteFile(FILE)				D DeleteFile^%YDBUTILS1(.FILE) Q
 	;							
-	;
-	;

@@ -190,9 +190,7 @@
                 icon="arrow_forward_ios"
               >
                 <template v-slot:default-body="prop">
-                  <span class="text-primary">
-                    {{ prop.node.story }}
-                  </span>
+                  <pre class="text-primary" style="margin:0px;padding:0px">{{ prop.node.story }}</pre>
                 </template>
               </q-tree>
             </div>
@@ -361,7 +359,6 @@ export default {
   },
   methods: {
     async onLazyLoadGlobalNodes(node) {
-      console.log(node);
       // this.selectedGlbl = glbl;
       this.loadedNodesMessage = "";
       let done = false;
@@ -421,6 +418,7 @@ export default {
       this.$refs.infscroll.stop();
     },
     async populateGlobal(glbl) {
+      this.selectedGlblNode = '';
       this.selectedGlbl = glbl;
       this.loadedNodesMessage = "";
       let done = false;
@@ -547,7 +545,7 @@ export default {
               color: "positive"
             });
             this.updateIcon(data.ICON);
-            this.updateValue(this.code)
+            this.updateValue(data.VALUE)
             this.globalRightDrawer = false;
             this.code = "";
             this.codeIcon = "";
