@@ -40,6 +40,11 @@
 
         <q-slide-transition>
           <div v-show="expandedSystemManagement">
+             <q-item clickable :to="'/processes'" dense>
+              <span style="font-size:16px">
+                Running Processes
+              </span>
+            </q-item>
             <q-item clickable :to="'/gde'" dense>
               <span style="font-size:16px">
                 Global Directory Editor (GDE)

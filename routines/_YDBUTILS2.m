@@ -6,9 +6,9 @@
 	;
 RunShellCommand(Command,RET)
 	N DEV,COUNTER,STR,IO S COUNTER=0
-	S IO=$P
+	S IO=$IO
 	S DEV="RunShellCommmandPipe"_$J
-	O DEV:(command=Command:readonly)::"PIPE"
+	O DEV:(shell="/bin/bash":command=Command:readonly)::"PIPE"
 	U DEV F  Q:$ZEOF=1  R STR:2 S RET($I(COUNTER))=STR Q:'$T
 	C DEV I $G(RET(COUNTER))="" K RET(COUNTER)
 	U IO
@@ -49,7 +49,7 @@ GetGlobalList(%ZG,PATTERN)
 	;
 ReadFileByLine(FILE,RET)
 	N SRC,LINE,COUNTER,IO
-	S SRC=FILE,IO=$P
+	S SRC=FILE,IO=$IO
 	O SRC:(readonly)
 	F  U SRC R LINE:2 Q:$ZEOF  Q:'$T  D
 	. I $E(LINE,$L(LINE))=$C(13) S LINE=$E(LINE,1,$L(LINE)-1)
@@ -60,7 +60,7 @@ ReadFileByLine(FILE,RET)
 	;
 ReadFileByChunk(FILE,CHUNK,RET)
 	N SRC,LINE,COUNTER,IO
-	S IO=$P
+	S IO=$IO
 	S SRC=FILE
 	O SRC:(readonly:fixed:recordsize=CHUNK)
 	F  U SRC R LINE:2 Q:$ZEOF  Q:'$T  D
@@ -70,7 +70,7 @@ ReadFileByChunk(FILE,CHUNK,RET)
 	Q
 	;
 WriteFile(FILE,DATA)
-	N IO S IO=$P
+	N IO S IO=$IO
 	O FILE:(newversion:chset="M")
 	N A S A="" F  S A=$O(DATA(A)) Q:A=""  U FILE W DATA(A),!
 	C FILE
@@ -79,4 +79,5 @@ WriteFile(FILE,DATA)
 	;
 UP(STR)	Q $TR(STR,"abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 LO(STR)	Q $TR(STR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")
+	;
 	;

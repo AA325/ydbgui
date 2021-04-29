@@ -483,12 +483,12 @@ ESC(X)
 	I X[$C(13) S Y=$$REPLACE(Y,$C(13),"\"_$C(114))
 	I X[$C(9) S Y=$$REPLACE(Y,$C(9),"\"_$C(116))
 	N I F I=1:1:$L(X) D
-	. I ($A($E(X,I))>=33!($A($E(X,I))<126)) Q
 	. I $A($E(X,I))=8   Q 
 	. I $A($E(X,I))=12  Q 
 	. I $A($E(X,I))=10  Q 
 	. I $A($E(X,I))=13  Q 
 	. I $A($E(X,I))=9   Q 
+	. I $A($E(X,I))>=33 Q
 	. S %DH=$A($E(X,I))
 	. D ^%DH
 	. S Y=$$REPLACE(Y,$E(X,I),"\u"_$E(%DH,$L(%DH)-3,$L(%DH)))
@@ -862,6 +862,7 @@ REPLACE(s,f,t)
 	i $tr(s,f)=s q s
 	n o,i s o="" f i=1:1:$l(s,f)  s o=o_$s(i<$l(s,f):$p(s,f,i)_t,1:$p(s,f,i))
 	q o
+	;
 	;
 	;
 	;

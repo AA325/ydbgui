@@ -31,6 +31,11 @@
         >
           <q-btn-dropdown flat label="System Management" dense>
             <q-list>
+              <q-item clickable v-close-popup :to="'/processes'">
+                <q-item-section>
+                  <q-item-label>Running Processes</q-item-label>
+                </q-item-section>
+              </q-item>
               <q-item clickable v-close-popup :to="'/gde'">
                 <q-item-section>
                   <q-item-label>Global Directory Editor (GDE)</q-item-label>

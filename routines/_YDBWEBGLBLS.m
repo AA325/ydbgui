@@ -20,7 +20,6 @@ GETGLOBALSLIST(I,O)
 	Q
 	;
 POPULATEGLOBALS(I,O)
-	;
 	N R S R=$NA(O("data"))
 	N G S G=$G(I("data","GLBL"))
 	N S S S=$G(I("data","SIZE")) I S="" S S=100

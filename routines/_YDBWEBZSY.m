@@ -9,6 +9,11 @@ YDBWEBZSY ;ISF/RWF,VEN/SMH - GT.M/VA system status display ;2018-06-06  1:27 PM
 	;
 EN ; [Public] Main Entry Point
 	;From the top just show by PID
+	n done,args,i,currentjob
+	s done=0
+	f i=1:1:$l($zcmdline," ") d
+	. s args(i)=$p($zcmdline," ",i)
+	i $l($g(args(1)))&($g(args(1))=+$g(args(1))) s currentjob=args(1)
 	N MODE
 	L +^YDBWEB("YDBWEBZSY","XUSYS","COMMAND"):1 I '$T G LW
 	S MODE=0 D WORK(MODE)
@@ -49,7 +54,7 @@ ASK() ;Ask sort item
 	;
 JOBEXAM(%ZPOS) ; [Public; Called by ^%YDBWEBZU]
 	; Preserve old state for process
-	N OLDIO S OLDIO=$IO
+	N OLDIO S OLDIO=$IO S U=""
 	N %reference S %reference=$REFERENCE
 	K ^YDBWEB("YDBWEBZSY","XUSYS",$J,"JE")
 	;
@@ -86,7 +91,7 @@ JOBEXAM(%ZPOS) ; [Public; Called by ^%YDBWEBZU]
 	; A -> Autorelink information
 	; C -> External programs that are loaded (presumable with D &)
 	; S -> Stack (use R instead)
-	I $G(^YDBWEB("YDBWEBZSY","XUSYS",$J,"CMD"))="EXAM"!($P($G(^("CMD")),U)="DEBUG") ZSHOW "*":^YDBWEB("YDBWEBZSY","XUSYS",$J,"JE")
+	I $G(^YDBWEB("YDBWEBZSY","XUSYS",$J,"CMD"))="EXAM" ZSHOW "*":^YDBWEB("YDBWEBZSY","XUSYS",$J,"JE")
 	;
 	; ^YDBWEB("YDBWEBZSY","XUSYS",8563,"JE","G",0)="GLD:*,REG:*,SET:25610,KIL:593,GET:12284,... ;
 	; Just grab the default region only. Decreases the stats as a side effect from this utility
@@ -120,8 +125,6 @@ JOBEXAM(%ZPOS) ; [Public; Called by ^%YDBWEBZU]
 	; Done. We can tell others we are ready
 	SET ^YDBWEB("YDBWEBZSY","XUSYS",$J,"JE","COMPLETE")=1
 	;
-	; TODO: IMPLEMENT DEBUG
-	I $P($G(^YDBWEB("YDBWEBZSY","XUSYS",$J,"CMD")),U)="DEBUG" QUIT  ; **NOT IMPLEMENTED**
 	;
 	; Restore old IO and $R
 	U OLDIO
@@ -217,9 +220,9 @@ USHOW(TAB,SORT,FILTER) ;Display job info, sorted by pid
 	. N DEV D DEV(.DEV,PID)
 	. S TNAME=$$DEVSEL(.DEV),PROCID=$P(X,"~",1) ; TNAME is Terminal Name, i.e. the device. ;
 	. S PROCNAME=$P(X,"~",5),CTIME=$P(X,"~",6)
-	. I $G(^YDBWEB("YDBWEBZSY","XUSYS",PID,"JE","ZMODE"))="OTHER" S TNAME="BG-"_TNAME
+	. I $G(^YDBWEB("YDBWEBZSY","XUSYS",PID,"JE","ZMODE"))="OTHER" S TNAME="Background-"_TNAME
 	. N UNAME S UNAME=$G(^YDBWEB("YDBWEBZSY","XUSYS",PID,"JE","UNAME"))
-	. W PROCID,"|",PROCNAME,"|",TNAME,"|",PLACE,"|",$J(CTIME,6),!
+	. W PROCID,$C(9),PROCNAME,$C(9),TNAME,$C(9),PLACE,$C(9),CTIME,!
 	. Q
 	Q
 	;
@@ -347,16 +350,21 @@ VPE(%OLDSTR,%OLDDEL,%NEWDEL) ; $PIECE extract based on variable length delimiter
 	Q %NEWSTR
 	;
 	; Sam's entry points
-UNIXLSOF(procs) ; [Public] - Get all processes accessing THIS database (only!)
+UNIXLSOF(procs) ; [Public] - Get all processes
 	; (return) .procs(n)=unix process number
 	; ZEXCEPT: shell,parse
-	n %cmd s %cmd="lsof -t $ydb_dist/yottadb" ;_$view("gvfile","DEFAULT")
+	n %cmd s %cmd="lsof -t $ydb_dist/yottadb && lsof -t $ydb_dist/mumps" ;_$view("gvfile","DEFAULT")
 	;s %cmd="ps ax | grep -i yottadb | awk '{print $1}'"
 	i $ZV["CYGWIN" s %cmd="ps -a | grep yottadb | grep -v grep | awk '{print $1}'"
 	n oldio s oldio=$IO
 	o "lsof":(shell="/bin/bash":command=%cmd:parse)::"pipe"
 	u "lsof"
-	n i f i=1:1 q:$ZEOF  r procs(i):1  i procs(i)="" k procs(i)
+	n i,k,tprocs f k=1:1 q:$ZEOF  r tprocs(k):1
+	s k="" f  s k=$o(tprocs(k)) q:k=""  d
+	. i tprocs(k)="" q 
+	. i tprocs(k)=$j q
+	. i $g(currentjob),tprocs(k)=currentjob q
+	. s procs($i(i))=tprocs(k)
 	u oldio c "lsof"
 	n cnt s cnt=0
 	n i f i=0:0 s i=$o(procs(i)) q:'i  i $i(cnt)
@@ -443,23 +451,38 @@ JOBVIEWZ ;
 	. D ^%YDBWEBZSY
 	QUIT
 	;
-JOBVIEWZ2(X) ; [Private] View Job Information
+PROCESSDETAILS
+	N i,args,currentjob
+	f i=1:1:$l($zcmdline," ") s args(i)=$p($zcmdline," ",i)
+	N X,CMD
+	S X=args(1)
+	S CMD=$G(args(2))
+	D JOBVIEWZ2(X,CMD)
+	Q
+	;	
+	;
+JOBVIEWZ2(X,CMD) ; [Private] View Job Information
+	;	
+	;	
+	;	
+	;	
 	I X'?1.N W !,"Not a valid job number." Q
 	I '$zgetjpi(X,"isprocalive") W !,"This process does not exist" Q
 	;
+	;	
 	N EXAMREAD
 	N DONEONE S DONEONE=0
-	F  D  Q:DONEONE  ; This is an inner read loop to refresh a process. ;
+	D ; This is an inner read loop to refresh a process. ;
 	. N % S %=$$EXAMINEJOBBYPID(X)
 	. I %'=0 W !,"The job didn't respond to examination for 305 ms. You may try again." S DONEONE=1 QUIT
-	. D PRINTEXAMDATA(X,$G(EXAMREAD))
-	. W "Enter to Refersh, V for variables, I for ISVs, K to kill",!
-	. W "L to load variables into your ST and quit, ^ to go back: ",!
-	. W "D to debug (broken), Z to zshow all data for debugging."
-	. R EXAMREAD:$G(DTIME,300)
-	. E  S DONEONE=1
-	. I EXAMREAD="^" S DONEONE=1
-	. I $TR(EXAMREAD,"k","K")="K" D HALTONE(X) S DONEONE=1
+	. D PRINTEXAMDATA(X,CMD)
+	. ;W "Enter to Refersh, V for variables, I for ISVs, K to kill",!
+	. ;W "L to load variables into your ST and quit, ^ to go back: ",!
+	. ;W "D to debug (broken), Z to zshow all data for debugging."
+	. ;R EXAMREAD:$G(DTIME,300)
+	. S DONEONE=1
+	. ;I EXAMREAD="^" S DONEONE=1
+	. ;I $TR(EXAMREAD,"k","K")="K" D HALTONE(X) S DONEONE=1
 	QUIT
 	;
 EXAMINEJOBBYPID(%J) ; [$$, Public, Silent] Examine Job by PID; Non-zero output failure
@@ -479,36 +502,24 @@ PRINTEXAMDATA(%J,FLAG) ; [Private] Print the exam data
 	; ^YDBWEB("YDBWEBZSY","XUSYS",8563,"JE","ZMODE")="OTHER"
 	N YDBWEBZSY M YDBWEBZSY=^YDBWEB("YDBWEBZSY","XUSYS",%J)
 	;
-	N BOLD S BOLD=$C(27,91,49,109)
-	N RESET S RESET=$C(27,91,109)
-	N UNDER S UNDER=$C(27,91,52,109)
+	N BOLD S BOLD="" ;$C(27,91,49,109)
+	N RESET S RESET="" ;$C(27,91,109)
+	N UNDER S UNDER="" ;$C(27,91,52,109)
 	N DIM S DIM=$$AUTOMARG()
-	;
-	; Debug
-	I $TR(FLAG,"d","D")="D" D DEBUG(%J)
-	;
-	; Show all data
-	I $TR(FLAG,"z","Z")="Z" ZWRITE YDBWEBZSY QUIT
 	;
 	; List Variables?
 	I $TR(FLAG,"v","V")="V" D  QUIT
-	. W !!,BOLD,"Variables: ",RESET,!
+	. ;W BOLD,"Variables: ",RESET,!
 	. N V F V=0:0 S V=$O(YDBWEBZSY("JE","V",V)) Q:'V  W YDBWEBZSY("JE","V",V),!
 	;
-	; Load Variables into my Symbol Table?
-	; ZGOTO pops the stack and drops you to direct mode ($ZLEVEL is 2 to exit one above direct mode)
-	I $TR(FLAG,"l","L")="L" D  ZGOTO 2:LOADST
-	. K ^TMP("YDBWEBZSY",$J)
-	. M ^TMP("YDBWEBZSY",$J)=YDBWEBZSY("JE","V")
 	;
 	; List ISVs?
 	I $TR(FLAG,"i","I")="I" D  QUIT
-	. W !!,BOLD,"ISVs: ",RESET,!
+	. ;W BOLD,"ISVs: ",RESET,!
 	. N I F I=0:0 S I=$O(YDBWEBZSY("JE","I",I)) Q:'I  W YDBWEBZSY("JE","I",I),!
 	;
 	; Normal Display: Job Info, Stack, Locks, Devices
-	W #
-	W UNDER,"JOB INFORMATION FOR "_%J," (",$ZDATE(YDBWEBZSY(0),"YYYY-MON-DD 24:60:SS"),")",RESET,!
+	;W UNDER,"JOB INFORMATION FOR "_%J," (",$ZDATE(YDBWEBZSY(0),"YYYY-MON-DD 24:60:SS"),")",RESET,!
 	W BOLD,"AT: ",RESET,YDBWEBZSY("JE","INTERRUPT"),": ",$G(YDBWEBZSY("JE","codeline")),!!
 	;
 	N CNT S CNT=1
@@ -560,6 +571,7 @@ LOADST ; [Private] Load the symbol table into the current process
 	QUIT
 	;
 DEBUG(%J) ; [Private] Debugging logic
+		Q
 	Q:'$ZGETJPI(%J,"isprocalive") -1
 	K ^YDBWEB("YDBWEBZSY","XUSYS",%J,"CMD"),^("JE")
 	S ^YDBWEB("YDBWEBZSY","XUSYS",%J,"CMD")="DEBUG"
@@ -624,5 +636,8 @@ AUTOMARG() ;RETURNS IOM^IOSL IF IT CAN and resets terminal to those dimensions; 
 	U %I I %T
 	; Extra just for ^ZJOB - don't wrap
 	U $PRINCIPAL:(WIDTH=0)
-	Q:$Q $S($G(DIM):DIM,1:"") Q
+	Q:$Q $S($G(DIM):DIM,1:"") 
+	Q
+	;
+	;
 	;
