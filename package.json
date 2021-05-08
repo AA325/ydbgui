@@ -10,10 +10,12 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@handsontable/vue": "^6.0.0",
     "@quasar/extras": "^1.0.0",
     "@vue/devtools": "*",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
+    "handsontable": "^8.3.2",
     "quasar": "^1.0.0",
     "vue-codemirror": "^4.0.6",
     "vue-i18n": "^8.0.0",

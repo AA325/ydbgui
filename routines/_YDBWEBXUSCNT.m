@@ -1,8 +1,19 @@
-%YDBWEBXUSCNT ;ISF/RWF - Job counting for GTM ;2018-05-02  11:10 AM
-	;;8.0;KERNEL;**275,10002**;July 10, 1995;Build 26
-	;0 return CNT
-	;1 inc CNT
-	;-1 dec CNT
+%YDBWEBXUSCNT ;ISF/RWF - Job counting for YottaDB ;2018-05-02  11:10 AM
+	;Copyright (C) 2021 YottaDB, LLC
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
 COUNT(INC,JOB) ;Keep count of jobs
 	; DECOMMISION *10002*
 	I $T(^%PEEKBYNAME)]"" QUIT

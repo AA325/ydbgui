@@ -1,29 +1,29 @@
+%YDBWEBGDE ;; 05/07/2021 ; YottaDB WEB GUI GDE modified version 
+	; Copyright (C) 2021 YottaDB, LLC
 	;
-%YDBWEBGDE
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
 	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+	; Get the global directory as a JSON object
+	;
+	; @param {Array} RESULT - Passed by reference. The JSON representation of the global directory
+	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
+	;
+	; @example
+	; d get^GDEWEB(.RESULT,.ARGS)
 	;
 	Q
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;								;
-; Copyright (c) 2017-2019 YottaDB LLC and/or its subsidiaries.	;
-; All rights reserved.						;
-;								;
-;	This source code contains the intellectual property	;
-;	of its copyright holder(s), and is made available	;
-;	under a license.  If you do not know the terms of	;
-;	the license, please stop and do not read further.	;
-;								;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; Get the global directory as a JSON object
-;
-; @param {Array} RESULT - Passed by reference. The JSON representation of the global directory
-; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-;
-; @example
-; d get^GDEWEB(.RESULT,.ARGS)
-;
-get(HTTPREQ,HTTPRSP,HTTPARGS)
+get(HTTPREQ,HTTPRSP,HTTPARGS) ;
 	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
 	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
 	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
@@ -100,19 +100,19 @@ get(HTTPREQ,HTTPRSP,HTTPARGS)
 	; encode the result
 	d ENCODE^%YDBWEB("result",HTTPRSP,"ERR")
 	q
-;
-; Delete given global directory element(s)
-;
-; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-; @param {Array/Object} BODY - Passed by reference. JSON array or object that describes the global directory element to delete
-; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
-;                         directory after the deletion
-; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
-;
-; @example
-; s BODY="{""name"":{""NAME"":""ZZYOTTADB1""},""region"":{""REGION"":""ZZYOTTADB""},""segment"":{""SEGMENT"":""ZZYOTTADB""}}"
-; s STATUS=$$delete^GDEWEB(.ARGS,.BODY,.RESULT)
-;
+	;
+	; Delete given global directory element(s)
+	;
+	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
+	; @param {Array/Object} BODY - Passed by reference. JSON array or object that describes the global directory element to delete
+	; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
+	;                         directory after the deletion
+	; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
+	;
+	; @example
+	; s BODY="{""name"":{""NAME"":""ZZYOTTADB1""},""region"":{""REGION"":""ZZYOTTADB""},""segment"":{""SEGMENT"":""ZZYOTTADB""}}"
+	; s STATUS=$$delete^GDEWEB(.ARGS,.BODY,.RESULT)
+	;
 delete(HTTPREQ,HTTPRSP,HTTPARGS)
 	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
 	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
@@ -165,15 +165,15 @@ delete(HTTPREQ,HTTPRSP,HTTPARGS)
 	m RSLT("errors")=gdeweberror
 	d ENCODE^%YDBWEB("RSLT",HTTPRSP,"ERR")
 	quit
-;
-; Internal line tag for delete line tag that deletes a single item from the global directory. ;
-; This requires a verification and put to save the changes to the global directory. ;
-;
-; @param {Array} JSON - Passed by reference. Contains an array structure for a single entry to be deleted from the global directory
-;
-; @example
-; d deleteone^GDEWEB("{""name"":{""NAME"":""XTMP""}")
-;
+	;
+	; Internal line tag for delete line tag that deletes a single item from the global directory. ;
+	; This requires a verification and put to save the changes to the global directory. ;
+	;
+	; @param {Array} JSON - Passed by reference. Contains an array structure for a single entry to be deleted from the global directory
+	;
+	; @example
+	; d deleteone^GDEWEB("{""name"":{""NAME"":""XTMP""}")
+	;
 deleteone(JSON)
 	i $d(JSON("name")) d
 	. i $g(JSON("name","NAME"))="#" s gdeweberror($i(gdeweberror("count")))="Can't delete 'Local Locks' name" q
@@ -186,19 +186,19 @@ deleteone(JSON)
 	. s SEGMENT=$tr($g(JSON("segment","SEGMENT")),lower,upper)
 	. d SEGMENT^GDEDELET
 	quit
-;
-; Save a given global directory
-;
-; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-; @param {Array/Object} BODY - Passed by reference. JSON object that describes the global directory entries to save
-; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
-;                         directory after the operation
-; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
-;
-; @example
-; s BODY="{""names"":{""ZZYOTTADB2(1:3)"":""TEMP""}}"
-; s STATUS=$$save^GDEWEB(.ARGS,.BODY,.RESULT)
-;
+	;
+	; Save a given global directory
+	;
+	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
+	; @param {Array/Object} BODY - Passed by reference. JSON object that describes the global directory entries to save
+	; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
+	;                         directory after the operation
+	; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
+	;
+	; @example
+	; s BODY="{""names"":{""ZZYOTTADB2(1:3)"":""TEMP""}}"
+	; s STATUS=$$save^GDEWEB(.ARGS,.BODY,.RESULT)
+	;
 DEBUG
 	M ^HTTPREQ=^A
 	S HTTPREQ("body")="%AAA"
@@ -305,19 +305,19 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	m result("errors")=gdeweberror
 	d ENCODE^%YDBWEB("result",HTTPRSP,"ERR")
 	quit
-;
-; Verify a given global directory
-;
-; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-; @param {Array/Object} BODY - Passed by reference. JSON object that describes the global directory to verify
-; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
-;                         directory
-; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
-;
-; @example
-; s BODY="{""names"":{""ZZTEST"":""TEMP""}}"
-; s STATUS=$$verify^GDEWEB(.ARGS,.BODY,.RESULT)
-;
+	;
+	; Verify a given global directory
+	;
+	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
+	; @param {Array/Object} BODY - Passed by reference. JSON object that describes the global directory to verify
+	; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
+	;                         directory
+	; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
+	;
+	; @example
+	; s BODY="{""names"":{""ZZTEST"":""TEMP""}}"
+	; s STATUS=$$verify^GDEWEB(.ARGS,.BODY,.RESULT)
+	;
 verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
 	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
@@ -447,16 +447,16 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	m RSLT("errors")=gdeweberror
 	d ENCODE^%YDBWEB("RSLT",HTTPRSP,"ERR")
 	quit
-;
-; =========================================================================
-; Common functions
-; =========================================================================
-;
-;
-; Performs all of the required setup to execute global directory editor internal commands. ;
-; Also sets up various error traps, etc. ;
-;
-;
+	;
+	; =========================================================================
+	; Common functions
+	; =========================================================================
+	;
+	;
+	; Performs all of the required setup to execute global directory editor internal commands. ;
+	; Also sets up various error traps, etc. ;
+	;
+	;
 setup
 	n debug
 	s debug=""
@@ -493,10 +493,10 @@ setup
 	; Using the GDE Defaults isn't an error. Kill it so the webservices can move on
 	i ($g(gdeweberror("count"))=1),gdeweberror(1)["%GDE-I-GDUSEDEFS" k gdeweberror
 	quit
-;
-; This converts object properties from boolean true/false to integer 1/0
-;
-; @input object - gde object structure
+	;
+	; This converts object properties from boolean true/false to integer 1/0
+	;
+	; @input object - gde object structure
 booltoint(object)
 	n REGION,SEGMENT,ITEM
 	; There is nothing in names that would need to be converted
@@ -509,10 +509,10 @@ booltoint(object)
 	. . i $g(object("segments",SEGMENT,ITEM))="true" s object("segments",SEGMENT,ITEM)=1
 	. . e  i $g(object("segments",SEGMENT,ITEM))="false" s object("segments",SEGMENT,ITEM)=0
 	quit
-;
-; This converts object properties from integer 1/0 to boolean true/false
-;
-; @input object - gde object structure
+	;
+	; This converts object properties from integer 1/0 to boolean true/false
+	;
+	; @input object - gde object structure
 inttobool(object)
 	n REGION,SEGMENT,ITEM
 	; There is nothing in names that would need to be converted
@@ -525,15 +525,15 @@ inttobool(object)
 	. . i $g(object("segments",SEGMENT,ITEM))=1 s object("segments",SEGMENT,ITEM)="true"
 	. . e  i $g(object("segments",SEGMENT,ITEM))=0 s object("segments",SEGMENT,ITEM)="false"
 	quit
-;
-; =========================================================================
-; Internal line tags below... ;
-; =========================================================================
-;
-; This calculates the display names. It is copied from GDESHOW and modified to move results to map2
-;
-; @input map - Global Directory map information
-;
+	;
+	; =========================================================================
+	; Internal line tags below... ;
+	; =========================================================================
+	;
+	; This calculates the display names. It is copied from GDESHOW and modified to move results to map2
+	;
+	; @input map - Global Directory map information
+	;
 mapdispcalc:
 	n coll,gblname,isplusplus,m,mapdisplen,mlen,mprev,mtmp,name,namedisp,namelen,offset
 	s m=""
@@ -551,15 +551,15 @@ mapdispcalc:
 	. s mapdisp(m)=namedisp,mapdisplen=$zwidth(namedisp)
 	. i mapdispmaxlen<mapdisplen s mapdispmaxlen=mapdisplen
 	quit
-;
-; Convert passed name to a name that is displayable (i.e. if it contains control characters, they are replaced by $c() etc.)
-; (called from mapdispcalc and onemap)
-;
-; @param {Array} name - Name from map data to convert to display name
-; @param {Integer} addquote - 0 = no surrounding double-quotes are added. 1 = when control characters are seen (e.g. $c(...)) return
-;                                 the name with double-quotes
-; @returns {String} - Display name of passed name
-;
+	;
+	; Convert passed name to a name that is displayable (i.e. if it contains control characters, they are replaced by $c() etc.)
+	; (called from mapdispcalc and onemap)
+	;
+	; @param {Array} name - Name from map data to convert to display name
+	; @param {Integer} addquote - 0 = no surrounding double-quotes are added. 1 = when control characters are seen (e.g. $c(...)) return
+	;                                 the name with double-quotes
+	; @returns {String} - Display name of passed name
+	;
 namedisp:(name,addquote)
 	; returns a
 	n namezwrlen,namezwr,namedisplen,namedisp,ch,quotestate,starti,i,seenquotestate3,doublequote
@@ -594,14 +594,14 @@ namedisp:(name,addquote)
 	; 2 and 3 are the only terminating states; check that. that too 3 only if addquote is 1. ;
 	; ASSERT : i '((quotestate=2)!(addquote&(quotestate=3))) s $etrap="zg 0" zsh "*"  zhalt 1
 	q namedisp
-;
-; Convert the map data into displayable format in map2
-;
-; @input {Array} map - Global Directory map data
-; @param {Array} s1 - Start of range
-; @param {Array/Object} s2 - End of range
-; @output {Array} map2 - Global Directory map data in displyable format
-;
+	;
+	; Convert the map data into displayable format in map2
+	;
+	; @input {Array} map - Global Directory map data
+	; @param {Array} s1 - Start of range
+	; @param {Array/Object} s2 - End of range
+	; @output {Array} map2 - Global Directory map data in displyable format
+	;
 onemap:(s1,s2)
 	i $l(mapreg),mapreg'=map(s2) quit
 	s l1=$zl(s1)
@@ -618,13 +618,13 @@ onemap:(s1,s2)
 	i '$d(segs(j,"ACCESS_METHOD")) s map2(index,"file")="NONE"
 	e  s s=segs(j,"FILE_NAME") s map2(index,"file")=$$namedisp(s,1)
 	quit
-;
-; Convert a given name string into a parsed array that contains all of the data needed to work with other GDE APIs
-; This is copied from tokscan^GDESCAN and modified to be silent and work with passed data
-;
-; @param {Array} name - name to convert
-; @output {Array} NAME - Parsed name in format understandable by other GDE APIs
-;
+	;
+	; Convert a given name string into a parsed array that contains all of the data needed to work with other GDE APIs
+	; This is copied from tokscan^GDESCAN and modified to be silent and work with passed data
+	;
+	; @param {Array} name - name to convert
+	; @output {Array} NAME - Parsed name in format understandable by other GDE APIs
+	;
 createnamearray(name)
 	n i,c,NAMEsubs,NAMEtype,cp,ntoken
 	s cp=1
@@ -815,5 +815,6 @@ CREATEREGION(I,O)
 	M @R@("RESULT")=A
 	S @R@("STATUS")="true"
 	Q
+	;
 	;
 	;

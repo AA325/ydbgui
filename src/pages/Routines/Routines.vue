@@ -1,3 +1,21 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
   <div class="q-pa-md" id="routinesDiv">
     <q-page-sticky position="top-right" :offset="[20, 3]">
@@ -22,7 +40,7 @@
         icon="add"
         @click="createRoutine"
         padding="sm"
-        :color="'primary'"
+        :color="'orange'"
       />
       <!-- <q-btn fab icon="delete" padding="xs" :color="'red'" /> -->
     </q-page-sticky>
@@ -46,7 +64,7 @@
       v-if="!loading && !loadingDialog"
     >
       <template v-slot:before>
-        <span class="text-center" style="font-size:28px;padding:25px">
+        <span :class="$q.dark.isActive?'text-orange text-center':'text-purple text-center'" style="font-size:28px;padding:25px">
           Routines
         </span>
         <q-infinite-scroll
@@ -85,6 +103,7 @@
               <q-item>
                 <q-item-section>
                   <q-item-label overline
+                  :class="$q.dark.isActive?'text-orange':'text-purple'"
                     >{{ routineTotal }} Routines</q-item-label
                   >
                   <!--
@@ -155,7 +174,7 @@
         </q-card-section>
         <q-card-section class="q-pa-md">
           <div class="flex flex-center">
-            <q-spinner-hourglass
+            <q-spinner-dots
               :color="$q.dark.isActive ? 'purple' : 'orange'"
               size="6em"
               v-if="loading"

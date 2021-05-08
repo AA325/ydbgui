@@ -1,3 +1,21 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
   <div class="q-pa-md" id="globalsDiv">
     <div style="padding:5px">
@@ -40,7 +58,7 @@
         v-if="!loading && !loadingDialog"
       >
         <template v-slot:before>
-          <span class="text-center" style="font-size:28px;padding:5px">
+          <span :class="$q.dark.isActive?'text-orange':'text-purple'" style="font-size:28px;padding:5px">
             Globals
           </span>
           <q-infinite-scroll
@@ -79,6 +97,7 @@
                 <q-item>
                   <q-item-section>
                     <q-item-label overline
+                    :class="$q.dark.isActive?'text-orange':'text-purple'"
                       >{{ globalTotal }} Global(s)</q-item-label
                     >
                     <!--
@@ -137,7 +156,7 @@
               class="flex items-center justify-center"
               style="height:calc(100vh - 125px);"
             >
-              <q-spinner-hourglass
+              <q-spinner-dots
                 :color="$q.dark.isActive ? 'purple' : 'orange'"
                 size="10em"
               />
@@ -176,7 +195,7 @@
                   dense
                   filled
                   v-model="nodesPagingSize"
-                  :options="[100, 1000, 10000]"
+                  :options="[100, 500, 1000]"
                   label="Number of nodes to show"
                 />
               </div>
@@ -190,7 +209,7 @@
                 icon="arrow_forward_ios"
               >
                 <template v-slot:default-body="prop">
-                  <pre class="text-primary" style="margin:0px;padding:0px">{{ prop.node.story }}</pre>
+                  <pre :class="$q.dark.isActive?'text-orange':'text-purple'" style="margin:0px 0px 15px 33px;padding:0px">{{ prop.node.story }}</pre>
                 </template>
               </q-tree>
             </div>
@@ -207,7 +226,7 @@
         </q-card-section>
         <q-card-section class="q-pa-md">
           <div class="flex flex-center">
-            <q-spinner-hourglass
+            <q-spinner-dots
               :color="$q.dark.isActive ? 'purple' : 'orange'"
               size="6em"
               v-if="loading"

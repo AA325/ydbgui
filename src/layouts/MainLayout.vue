@@ -1,3 +1,21 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
   <q-layout :class="$q.dark.isActive ? 'bg-banner-dark' : 'bg-banner-light'">
     <q-header
@@ -5,7 +23,7 @@
       elevated
       class="text-white"
       height-hint="61.59"
-      :style="theme === 'light' ? 'background: #FA780A' : 'background: #3C176A'"
+      :class="$q.dark.isActive ? 'bg-purple' : 'bg-orange'"
     >
       <q-toolbar class="q-py-sm q-px-md">
         <q-btn
@@ -19,7 +37,6 @@
           <q-avatar size="42px">
             <img
               src="~assets/logo.png"
-              class="rotating"
               style="background-color:white;"
             />
           </q-avatar>
@@ -29,39 +46,44 @@
           v-if="$q.screen.gt.xs"
           class="GL__toolbar-link q-ml-xs q-gutter-md text-body2 text-weight-bold row items-center "
         >
-          <q-btn-dropdown flat label="System Management" dense>
+          <q-btn-dropdown flat :label="$t('toolbar.system_management')" dense>
             <q-list>
               <q-item clickable v-close-popup :to="'/processes'">
                 <q-item-section>
-                  <q-item-label>Running Processes</q-item-label>
+                  <q-item-label>{{$t('toolbar.running_processes')}}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/gde'">
                 <q-item-section>
-                  <q-item-label>Global Directory Editor (GDE)</q-item-label>
+                  <q-item-label>{{$t('toolbar.global_directory_editor')}}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
           </q-btn-dropdown>
-          <q-btn-dropdown flat label="System Explorer" dense>
+          <q-btn-dropdown flat :label="$t('toolbar.system_explorer')" dense>
             <q-list>
               <q-item clickable v-close-popup :to="'/routines'">
                 <q-item-section>
-                  <q-item-label>Routines</q-item-label>
+                  <q-item-label>{{$t('toolbar.routines')}}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/globals'">
                 <q-item-section>
-                  <q-item-label>Globals</q-item-label>
+                  <q-item-label>{{$t('toolbar.globals')}}</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup :to="'/octo-sql'">
+                <q-item-section>
+                  <q-item-label>{{$t('toolbar.sqltables')}}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
           </q-btn-dropdown>
-          <q-btn-dropdown flat label="Utilities" dense>
+          <q-btn-dropdown flat :label="$t('toolbar.utilities')" dense>
             <q-list> </q-list>
           </q-btn-dropdown>
           <router-link to="/gde" class="text-white">
-            DOCUMENTATION
+            {{$t('toolbar.documentation').toUpperCase()}}
           </router-link>
         </div>
 
@@ -120,8 +142,6 @@
         <q-card-section>
           <div class="text-h6">Connection Info</div>
           <div>
-            The setting below are needed so that the app can connect to the
-            server
           </div>
         </q-card-section>
 
@@ -192,7 +212,7 @@ export default {
       lang: this.$i18n.locale,
       langOptions: [
         { value: "en-us", label: "EN" },
-        { value: "de", label: "DE" }
+        { value: "ar", label: "AR" },
       ],
       settingsEntered: false
     };
@@ -361,7 +381,7 @@ export default {
   transform: rotateZ(360deg);
 }
 .bg-banner-light {
-  background-image: url(banner-image-light.jpg);
+  background-image: url(banner-image-light.png);
   background-size: cover;
 }
 .bg-banner-dark {

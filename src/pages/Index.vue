@@ -1,3 +1,21 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
   <q-page>
     <div class="row flex flex-center q-pa-md" :style="'padding-top:50px'">
@@ -21,7 +39,7 @@
       <q-card style="width:250px">
         <q-img src="~assets/uc-1.png" />
         <q-card-actions>
-          <span style="font-size:18px;font-weight:700;">System Management</span>
+          <span style="font-size:18px;font-weight:700;">{{$t('toolbar.system_management')}}</span>
           <q-space />
 
           <q-btn
@@ -42,12 +60,12 @@
           <div v-show="expandedSystemManagement">
              <q-item clickable :to="'/processes'" dense>
               <span style="font-size:16px">
-                Running Processes
+                {{$t('toolbar.running_processes')}}
               </span>
             </q-item>
             <q-item clickable :to="'/gde'" dense>
               <span style="font-size:16px">
-                Global Directory Editor (GDE)
+                {{$t('toolbar.global_directory_editor')}}
               </span>
             </q-item>
           </div>
@@ -57,7 +75,7 @@
       <q-card style="width:250px">
         <q-img src="~assets/uc-2.png" />
         <q-card-actions>
-          <span style="font-size:18px;font-weight:700;">System Explorer</span>
+          <span style="font-size:18px;font-weight:700;">{{$t('toolbar.system_explorer')}}</span>
           <q-space />
 
           <q-btn
@@ -78,12 +96,17 @@
           <div v-show="expandedSystemExplorer">
             <q-item clickable :to="'/routines'" dense>
               <span style="font-size:16px">
-                Routines
+                {{$t('toolbar.routines')}}
               </span>
             </q-item>
             <q-item clickable :to="'/globals'" dense>
               <span style="font-size:16px">
-                Globals
+                {{$t('toolbar.globals')}}
+              </span>
+            </q-item>
+            <q-item clickable :to="'/octo-sql'" dense>
+              <span style="font-size:16px">
+                {{$t('toolbar.sqltables')}}
               </span>
             </q-item>
           </div>
@@ -92,7 +115,7 @@
       <q-card style="width:250px">
         <q-img src="~assets/uc-4.png" />
         <q-card-actions>
-          <span style="font-size:18px;font-weight:700;">Utilities</span>
+          <span style="font-size:18px;font-weight:700;">{{$t('toolbar.utilities')}}</span>
           <q-space />
 
           <q-btn
@@ -117,7 +140,7 @@
             <q-card style="width:250px">
         <q-img src="~assets/uc-6.png" />
         <q-card-actions>
-          <span style="font-size:18px;font-weight:700;">Documentation</span>
+          <span style="font-size:18px;font-weight:700;"> {{$t('toolbar.documentation')}}</span>
           <q-space />
           <q-btn
             color="grey"

@@ -1,5 +1,4 @@
-// https://github.com/michael-ciniawsky/postcss-load-config
-/*
+%YDBWEBTEST2 ; Ahmed Abdelrazek ; 05/07/2021 ; YottaDB Test Routine
 	; Copyright (C) 2021 YottaDB, LLC
 	; Author: Ahmed Abdelrazek
 	;
@@ -16,10 +15,6 @@
 	; You should have received a copy of the GNU Affero General Public License
 	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
 	;
-*/
-module.exports = {
-  plugins: [
-    // to edit target browsers: use "browserslist" field in package.json
-    require('autoprefixer')
-  ]
-}
+	Q
+	;	
+	;

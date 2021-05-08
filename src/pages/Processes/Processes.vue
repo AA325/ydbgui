@@ -1,12 +1,30 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
      <div class="q-pa-md">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs">
-      <q-breadcrumbs-el label="Home" />
+      <q-breadcrumbs-el  label="Home" />
       <q-breadcrumbs-el label="System Administration" />
-      <q-breadcrumbs-el label="Running Processes" />
+      <q-breadcrumbs-el  label="Running Processes" />
     </q-breadcrumbs>
-       <q-btn round style="margin-right:10px" size="md" icon="refresh"  :color="$q.dark.isActive ? 'purple' : 'orange'"  @click="refreshProcesses">
+       <q-btn round style="margin-right:10px" size="md" icon="refresh"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="refreshProcesses">
         <q-tooltip>
         Refresh running processes
         </q-tooltip>
@@ -18,7 +36,7 @@
     <div class="row flex flex-center">
         <div class="col-auto">
     <div v-if="loading">
-        <q-spinner-gears
+        <q-spinner-dots
           :color="$q.dark.isActive ? 'purple' : 'orange'"
           size="16em"
         />
@@ -50,7 +68,7 @@
       </thead>
       <tbody>
         <tr v-for="process in processes" :key="'pid-'+process.PID">
-          <td class="text-left" v-if="typeof process.PID ==='number'"><router-link :to="'process/'+process.PID">{{process.PID}}</router-link></td>
+          <td class="text-left" v-if="typeof process.PID ==='number'"><router-link :to="'process/'+process.PID" :class="'text-orange'">{{process.PID}}</router-link></td>
           <td class="text-left" v-else>{{process.PID}}</td>
           <td class="text-left">{{process.PN}}</td>
           <td class="text-left">{{process.DV}}</td>

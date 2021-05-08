@@ -1,6 +1,19 @@
-%YDBWEBPRSC
+%YDBWEBPRSC ; Ahmed Abdelrazek ; 05/07/2021 ; YottaDB Running Processes GUI
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
 	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
 	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
 	;
 	Q
 	;
@@ -52,4 +65,7 @@ KILLPROCESS(I,O)
 	I PID'?1.N S @R@("STATUS")="false" Q
 	I '$ZGETJPI(PID,"isprocalive") S @R@("STATUS")="false" Q
 	N A D RunShellCommand^%YDBUTILS("$ydb_dist/mupip STOP "_PID)
-	S @R@("STATUS")="true" 
+	S @R@("STATUS")="true"
+	Q
+	;
+	;

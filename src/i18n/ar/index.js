@@ -18,14 +18,14 @@
 
 export default {
   toolbar:{
-    system_management:'System Management',
-    system_explorer:'System Explorer',
-    utilities:'Utilities',
-    documentation:'Documentation',
-    running_processes:'Running Processes',
-    global_directory_editor:'Global Directory Editor (GDE)',
-    routines:'Routines',
-    globals:'Globals',
-    sqltables:'OCTO SQL'
+    system_management:'ادارة النظام',
+    system_explorer:'مستكشف النظام',
+    utilities:'خدمات',
+    documentation:'توثيق',
+    running_processes:'ادارة العمليات',
+    global_directory_editor:'محرر الدليل العالمي (GDE)',
+    routines:'الروتين',
+    globals:'جلوبالس',
+    sqltables:'OCTO الجداول'
   }
 }

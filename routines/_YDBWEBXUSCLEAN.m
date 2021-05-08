@@ -1,6 +1,19 @@
 %YDBWEBXUSCLEAN	;SF/STAFF - CLEANUP BEFORE EXIT ;10/26/06  08:12
-	;;8.0;KERNEL;**13,59,165,353,434**;Jul 10, 1995;Build 6
-H	;;Exit point for all R/S applications
+	; Copyright (C) 2021 YottaDB, LLC
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
 	LOCK  ;Unlock any locks
 	S U="^"
 	;Unwind Exit Actions

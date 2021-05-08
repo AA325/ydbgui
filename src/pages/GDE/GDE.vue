@@ -1,12 +1,30 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
   <div class="q-pa-md" :key="pageKey" id="gdediv">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs">
-      <q-breadcrumbs-el label="Home" />
-      <q-breadcrumbs-el label="System Administration" />
-      <q-breadcrumbs-el label="Global Directory Editor (GDE)" />
+      <q-breadcrumbs-el  label="Home" />
+      <q-breadcrumbs-el   label="System Administration" />
+      <q-breadcrumbs-el   label="Global Directory Editor (GDE)" />
     </q-breadcrumbs>
-      <span class="text-center" style="font-size:28px;padding:25px"
+      <span :class="$q.dark.isActive?'text-orange':'text-purple'" style="font-size:28px;padding:25px"
         >Global Directory Editor (GDE)</span
       >
       
@@ -83,8 +101,9 @@
       :hide-selected-banner="true"
     >
       <template v-slot:top>
+        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
         <div style="padding:10px">
-          <span class="text-center" style="font-size:21px;">Names</span>
+          <span  style="font-size:21px;">Names</span>
         </div>
         <q-btn round icon="info" size="md" dense flat />
         <q-space />
@@ -109,13 +128,14 @@
           />
           -->
         </div>
+        </div>
       </template>
       <template v-slot:body-cell-region="props">
         <q-td :props="props">
           <div>
             <q-badge
               style="max-width:150px"
-              color="positive"
+              color="orange"
               :label="props.value"
             />
           </div>
@@ -124,7 +144,7 @@
       <template v-slot:body-cell-segment="props">
         <q-td :props="props">
           <div>
-            <q-badge style="max-width:150px" color="accent" :label="props.value" />
+            <q-badge style="max-width:150px" color="purple" :label="props.value" />
           </div>
         </q-td>
       </template>
@@ -187,6 +207,7 @@
       :hide-selected-banner="true"
     >
       <template v-slot:top>
+        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
         <div style="padding:10px">
           <span class="text-center" style="font-size:21px;">Regions</span>
         </div>
@@ -221,18 +242,19 @@
           />
           -->
         </div>
+        </div>
       </template>
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
           <div>
-            <q-badge style="max-width:100px" color="positive" :label="props.value" />
+            <q-badge style="max-width:100px" color="orange" :label="props.value" />
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-segment="props">
         <q-td :props="props">
           <div>
-            <q-badge style="max-width:100px" color="accent" :label="props.value" />
+            <q-badge style="max-width:100px" color="purple" :label="props.value" />
           </div>
         </q-td>
       </template>
@@ -429,6 +451,7 @@
       :hide-selected-banner="true"
     >
       <template v-slot:top>
+        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
         <div style="padding:10px">
           <span class="text-center" style="font-size:21px;">Segments</span>
         </div>
@@ -463,11 +486,12 @@
           />
           -->
         </div>
+        </div>
       </template>
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
           <div>
-            <q-badge style="max-width:100px" color="accent" :label="props.value" />
+            <q-badge style="max-width:100px" color="purple" :label="props.value" />
           </div>
         </q-td>
       </template>
@@ -639,23 +663,25 @@
       :hide-selected-banner="true"
     >
       <template v-slot:top>
+        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
         <div style="padding:10px">
           <span class="text-center" style="font-size:21px;">Global Mapping</span>
         </div>
         <q-btn round icon="info" size="md" dense flat />
         <q-space />
+        </div>
       </template>
       <template v-slot:body-cell-segment="props">
         <q-td :props="props">
           <div>
-            <q-badge style="max-width:100px" color="accent" :label="props.value" />
+            <q-badge style="max-width:100px" color="purple" :label="props.value" />
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-region="props">
         <q-td :props="props">
           <div>
-            <q-badge style="max-width:100px" color="positive" :label="props.value" />
+            <q-badge style="max-width:100px" color="orange" :label="props.value" />
           </div>
         </q-td>
       </template>

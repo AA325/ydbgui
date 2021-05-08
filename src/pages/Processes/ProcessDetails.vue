@@ -1,15 +1,34 @@
+<!--
+	; Copyright (C) 2021 YottaDB, LLC
+	; Author: Ahmed Abdelrazek
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
+-->
 <template>
   <div class="q-pa-md">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs">
-        <q-breadcrumbs-el label="Home" />
-        <q-breadcrumbs-el label="System Management" />
-        <q-breadcrumbs-el label="Processes" />
-        <q-breadcrumbs-el :label="'Process ' + $route.params.pid" />
+        <q-breadcrumbs-el  label="Home" />
+        <q-breadcrumbs-el  label="System Management" />
+        <q-breadcrumbs-el  label="Processes" />
+        <q-breadcrumbs-el  :label="'Process ' + $route.params.pid" />
       </q-breadcrumbs>
       <q-btn
         round
         style="margin-right:10px"
+        :class="$q.dark.isActive?'bg-orange':'bg-purple'"
         size="md"
         icon="arrow_back"
         :color="'primary'"
@@ -35,12 +54,12 @@
     <q-card v-if="!processAlive">
       <q-card-section>
         <span class="text-negative" style="font-size:26px;font-wight:700">
-          Process does not exist or no longer alive!
+          Process details not available!
         </span>
       </q-card-section>
     </q-card>
     <q-card v-if="processAlive">
-      <q-tabs v-model="tab" dense class="bg-orange text-white shadow-2">
+      <q-tabs v-model="tab" dense :class="$q.dark.isActive?'bg-orange text-white shadow-2':'bg-purple text-white shadow-2'">
         <q-tab name="details" label="Process Details" />
         <q-tab name="variables" label="Variables" />
         <q-tab name="ivariables" label="Intrinsic Variables" />
@@ -49,8 +68,8 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="details">
-          <div class="text-h6 text-primary">
-            Process {{ $route.params.pid }} Details
+          <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
+            PID:{{ $route.params.pid }} Details
           </div>
           <pre
             style="max-height:calc(100vh - 302px)"
@@ -59,8 +78,8 @@
         </q-tab-panel>
 
         <q-tab-panel name="variables">
-          <div class="text-h6 text-primary">
-            Process {{ $route.params.pid }} Variables
+          <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
+            PID:{{ $route.params.pid }} Variables
           </div>
           <pre
             style="max-height:calc(100vh - 302px)"
@@ -69,8 +88,8 @@
         </q-tab-panel>
 
         <q-tab-panel name="ivariables">
-          <div class="text-h6 text-primary">
-            Process {{ $route.params.pid }} Intrinsic variables
+          <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
+            PID:{{ $route.params.pid }} Intrinsic variables
           </div>
           <pre
             style="max-height:calc(100vh - 302px)"

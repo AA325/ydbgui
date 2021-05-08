@@ -1,11 +1,19 @@
-YDBWEBZSY ;ISF/RWF,VEN/SMH - GT.M/VA system status display ;2018-06-06  1:27 PM
-	;;8.0;KERNEL;**349,10001,10002**;Jul 10, 1995;Build 26
-	; Submitted to OSEHRA in 2017 by Sam Habiel for OSEHRA
-	; Original Routine of unknown provenance -- was in unreleased VA patch XU*8.0*349 and thus perhaps in the public domain. ;
-	; Rewritten by KS Bhaskar and Sam Habiel 2005-2015
-	; Sam: JOBEXAM, WORK, USHOW, UNIX, UNIXLSOF, INTRPT, INTRPTALL, HALTALL, ZJOBff
-	; Bhaskar provided pipe implementations of various commands. ;
-	;GT.M/VA %SY utility - status display
+YDBWEBZSY ;ISF/RWF,VEN/SMH - YottaDB system status display ;2018-06-06  1:27 PM
+	; Copyright (C) 2021 YottaDB, LLC
+	;
+	; This program is free software: you can redistribute it and/or modify
+	; it under the terms of the GNU Affero General Public License as
+	; published by the Free Software Foundation, either version 3 of the
+	; License, or (at your option) any later version. ;
+	;
+	; This program is distributed in the hope that it will be useful,
+	; but WITHOUT ANY WARRANTY; without even the implied warranty of
+	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	; GNU Affero General Public License for more details. ;
+	;
+	; You should have received a copy of the GNU Affero General Public License
+	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
+	;
 	;
 EN ; [Public] Main Entry Point
 	;From the top just show by PID
