@@ -18,36 +18,41 @@
 -->
 <template>
   <div class="q-pa-md" id="tablesDiv">
-    <div style="padding:5px">
-      <q-breadcrumbs gutter="xs">
+    <div style="padding:5px" class="row">
+      <q-btn
+        @click="collapseLeftSide"
+        :fab="collapsed"
+        :flat="!collapsed"
+        dense
+        padding="0px"
+        icon="push_pin"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+      />
+      <q-breadcrumbs gutter="xs" style="padding-left:10px;">
         <q-breadcrumbs-el label="Home" />
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="OCTO Tables" />
-        <q-breadcrumbs-el
-          v-if="!showLoadedNodesBanner && loadedNodesMessage"
-          :label="loadedNodesMessage"
-        />
       </q-breadcrumbs>
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-      >
-        <q-page-sticky
-          v-show="loadedNodesMessage.indexOf('out of') > 0"
-          position="top"
-          :offset="[18, 18]"
-        >
-          <q-banner
-            dense
-            class="text-white bg-red"
-            v-show="showLoadedNodesBanner"
-          >
-            {{ loadedNodesMessage }}
-          </q-banner>
-        </q-page-sticky>
-      </transition>
     </div>
+    <q-dialog v-model="loadingDialog" persistent>
+      <q-card style="height:185px;width:300px">
+        <q-card-section class="q-pa-md">
+          <span style="font-size:18px;" class="flex flex-center"
+            >Loading Tables. Please wait!</span
+          >
+        </q-card-section>
+        <q-card-section class="q-pa-md">
+          <div class="flex flex-center">
+            <q-spinner-dots
+              :color="$q.dark.isActive ? 'purple' : 'orange'"
+              size="6em"
+              v-if="loading"
+              :thickness="0"
+            />
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <transition
       enter-active-class="animated fadeIn"
       leave-active-class="animated fadeOut"
@@ -55,7 +60,8 @@
       <q-splitter
         v-model="splitterModel"
         style="height:calc(100vh - 125px)"
-        v-if="!loading && !loadingDialog"
+        v-if="!loading"
+        :limits="[0, 50]"
       >
         <template v-slot:before>
           <span
@@ -154,6 +160,30 @@
         </template>
 
         <template v-slot:after>
+          <q-tabs
+            v-model="tab"
+            inline-label
+            outside-arrows
+            mobile-arrows
+            dense
+            align="left"
+            :class="
+              $q.dark.isActive
+                ? 'text-orange text-bold'
+                : 'text-purple text-bold'
+            "
+            :breakpoint="0"
+          >
+            <q-tab
+              ripple
+              no-caps
+              v-for="tab in tabs"
+              :key="tab.name"
+              v-bind="tab"
+            >
+              <q-btn dense padding="5px" flat size="sm" icon="close" />
+            </q-tab>
+          </q-tabs>
           <div class="q-pa-md">
             <q-card>
               <q-card-section>
@@ -167,10 +197,12 @@
                   SQL Statement:
                 </span>
                 <codemirror
+                  :key="'code-panel'+tablekey"
+                  v-if="tabData && tabData[tab] && tabData[tab]['hotSettings']"
                   id="codeMirrorTables"
                   ref="cmEditor"
                   @input="onCmCodeChange"
-                  :value="code"
+                  :value="tabData[tab]['hotSettings'].code"
                   :options="cmOptions"
                 />
                 <q-btn
@@ -186,8 +218,9 @@
                   />
                 </div>
                 <hot-table
-                  v-if="hotSettings.data.length > 0 && !loadingTable"
-                  :settings="hotSettings"
+                  :key="'tab-panel-'+tablekey"
+                  v-if="tabData && tabData[tab] && tabData[tab]['hotSettings'] && tabData[tab]['hotSettings'].data.length > 0 && !loadingTable"
+                  :settings="tabData[tab]['hotSettings']"
                   :id="
                     $q.dark.isActive ? 'sqlhottable-dark' : 'sqlhottable-light'
                   "
@@ -201,6 +234,7 @@
   </div>
 </template>
 <script>
+import { uid } from 'quasar'
 import { codemirror } from "vue-codemirror";
 import { HotTable } from "@handsontable/vue";
 import "codemirror/mode/sql/sql.js";
@@ -212,15 +246,21 @@ export default {
   },
   data() {
     return {
+      collapsed: false,
+      tablekey:uid(),
       hotSettings: {
         data: [],
         licenseKey: "non-commercial-and-evaluation",
         colHeaders: true,
         rowHeaders: true,
         width: "100%",
-        height: "calc(100vh - 396px)",
-        colHeaders:[]
+        height: "calc(100vh - 432px)",
+        colHeaders: [],
+        code:''
       },
+      tabData: {},
+      tab: "",
+      tabs: [],
       codeIcon: "",
       updatedNodeValue: "",
       tableRightDrawer: false,
@@ -260,6 +300,23 @@ export default {
     };
   },
   methods: {
+    generateNewTableKey(){
+      this.tablekey = uid();
+    },
+    collapseLeftSide() {
+      this.collapsed = !this.collapsed;
+      if (this.collapsed) {
+        this.splitterModel = 0;
+      } else {
+        this.splitterModel = this.$q.localStorage.getItem(
+          "ydb-tables-splitter"
+        );
+        if (this.splitterModel === 0) {
+          this.splitterModel = 15;
+        }
+      }
+      this.generateNewTableKey()
+    },
     async executeSqlStatement() {
       let done = false;
       setTimeout(() => {
@@ -267,24 +324,32 @@ export default {
           return;
         }
         this.loadingTable = true;
-      }, 1000);
-      this.$set(this.hotSettings,'data',[])
-      this.$set(this.hotSettings,'colHeaders',[])
+      }, 500);
       let data = await this.$M("EXECUTESQL^%YDBWEBTBLS", {
-        STATEMENT: this.code
+        STATEMENT: this.tabData[this.tab]['hotSettings'].code
       });
       done = true;
       this.loadingTable = false;
-      if (data && data.RESULT){
-        this.$set(this.hotSettings,'data',data.RESULT.splice(1))
-        this.$set(this.hotSettings,'colHeaders',data.RESULT[0])
-      } else {
-        this.$set(this.hotSettings,'data',[])
-        this.$set(this.hotSettings,'data',[])
+      let code = this.tabData[this.tab]["hotSettings"]['code']
+      this.$set(this.tabData,this.tab,{});
+      this.$set(this.tabData[this.tab],"hotSettings",Object.assign({},this.hotSettings));
+      this.tabData[this.tab]["hotSettings"]['code'] = code
+      if (data && data.RESULT) {
+        this.$set(
+          this.tabData[this.tab]["hotSettings"],
+          "data",
+          data.RESULT.splice(1)
+        );
+        this.$set(
+          this.tabData[this.tab]["hotSettings"],
+          "colHeaders",
+          data.RESULT[0]
+        );
       }
+      this.generateNewTableKey()
     },
     getCurrentActiveTable(tbl) {
-      return this.currentActiveTable === tbl;
+      return this.tab === tbl;
     },
     loadMoreTables(index, done) {
       this.shownTableIndex = index;
@@ -305,19 +370,35 @@ export default {
       this.$refs.infscroll.stop();
     },
     async populateTable(tbl) {
+      let tab = {
+        name: tbl.T,
+        label: tbl.T
+      };
+      let found = false;
+      this.tabs.map(t => {
+        if (t.name === tab.name && t.label === tab.label) {
+          found = true;
+        }
+      });
+      if (!found) {
+        this.tabs.unshift(tab);
+      }
+      this.tab = tab.name;
       this.selectedTblNode = "";
       this.selectedTbl = tbl;
       this.loadedNodesMessage = "";
-      this.code = `SELECT * FROM ${tbl.T} LIMIT 100;`;
+      this.$set(this.tabData,this.tab,{});
+      this.$set(this.tabData[this.tab],"hotSettings",Object.assign({},this.hotSettings));
+      this.tabData[this.tab]['hotSettings'].code = `SELECT * FROM ${tbl.T} LIMIT 100;`;
       this.currentActiveTable = tbl.T;
-      this.$set(this.hotSettings,'data',[])
-      this.$set(this.hotSettings,'data',[])
-      await this.executeSqlStatement()
+      await this.executeSqlStatement();
     },
     async getTables() {
       if (!this.searchTables.length) {
         return;
       }
+      this.loading = true;
+      this.loadingDialog = true;
       let done = false;
       setTimeout(() => {
         if (done) {
@@ -325,13 +406,16 @@ export default {
         }
         this.loading = true;
         this.loadingDialog = true;
-      }, 1000);
+      }, 0);
       this.shownTableList = [];
       this.shownTableIndex = 0;
       this.finishedLoadingAllTables = false;
       let data = await this.$M("GETTABLESLIST^%YDBWEBTBLS", {
         PATTERN: this.searchTables
       });
+      done = true;
+      this.loading = false;
+      this.loadingDialog = false;
       if (data && data.TABLETOTAL) {
         this.tableTotal = data.TABLETOTAL;
       } else {
@@ -353,16 +437,13 @@ export default {
           this.finishedLoadingAllTables = true;
         }
       }
-      done = true;
-      this.loading = false;
-      this.loadingDialog = false;
     },
     loadMoreScrolledTables() {
       this.$refs.infscroll.resume();
       this.$refs.infscroll.trigger();
     },
     onCmCodeChange(newCode) {
-      this.code = newCode;
+      this.tabData[this.tab]['hotSettings'].code = newCode;
     }
   },
   computed: {
@@ -371,7 +452,7 @@ export default {
     },
     codemirror() {
       return this.$refs.cmEditor.codemirror;
-    }
+    },
   },
   watch: {
     theme(v) {
@@ -382,13 +463,27 @@ export default {
       }
     },
     splitterModel(v) {
-      this.$q.localStorage.set("ydb-tables-splitter", v);
+      if (v === 0) {
+        this.collapsed = true;
+      } else {
+        this.collapsed = false;
+        this.$q.localStorage.set("ydb-tables-splitter", v);
+      }
+    },
+    collapsed(v) {
+      this.$q.localStorage.set("ydb-tables-collapsed", v);
+    },
+    tab(v){
+      this.generateNewTableKey()
     }
   },
-  created() {
-    let splitterModel = this.$q.localStorage.getItem("ydb-tables-splitter");
-    if (splitterModel) {
-      this.splitterModel = splitterModel;
+  async created() {
+    this.collapsed = !!this.$q.localStorage.getItem("ydb-tables-collapsed");
+    if (this.collapsed) {
+      this.splitterModel = 0;
+    } else {
+      this.splitterModel =
+        this.$q.localStorage.getItem("ydb-tables-splitter") || 15;
     }
   },
   async mounted() {

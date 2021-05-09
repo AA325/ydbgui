@@ -39,6 +39,6 @@ DeleteFile(FILE)
 	N RET,COMMMAND
 	S COMMAND="rm "_FILE
 	D RunShellCommand^%YDBUTILS(COMMAND,.RET)
-	Q 1
+	Q
 	;
 	;
