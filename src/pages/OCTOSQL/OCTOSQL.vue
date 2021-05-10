@@ -164,7 +164,6 @@
             v-model="tab"
             inline-label
             outside-arrows
-            mobile-arrows
             dense
             align="left"
             :class="
@@ -181,7 +180,15 @@
               :key="tab.name"
               v-bind="tab"
             >
-              <q-btn dense padding="5px" flat size="sm" icon="close" />
+              <q-btn
+                dense
+                padding="5px"
+                flat
+                size="sm"
+                icon="close"
+                @click="closeTab(tab.name)"
+                :disable="tabs.length === 1"
+              />
             </q-tab>
           </q-tabs>
           <div class="q-pa-md">
@@ -197,7 +204,7 @@
                   SQL Statement:
                 </span>
                 <codemirror
-                  :key="'code-panel'+tablekey"
+                  :key="'code-panel' + tablekey"
                   v-if="tabData && tabData[tab] && tabData[tab]['hotSettings']"
                   id="codeMirrorTables"
                   ref="cmEditor"
@@ -218,8 +225,14 @@
                   />
                 </div>
                 <hot-table
-                  :key="'tab-panel-'+tablekey"
-                  v-if="tabData && tabData[tab] && tabData[tab]['hotSettings'] && tabData[tab]['hotSettings'].data.length > 0 && !loadingTable"
+                  :key="'tab-panel-' + tablekey"
+                  v-if="
+                    tabData &&
+                      tabData[tab] &&
+                      tabData[tab]['hotSettings'] &&
+                      tabData[tab]['hotSettings'].data.length > 0 &&
+                      !loadingTable
+                  "
                   :settings="tabData[tab]['hotSettings']"
                   :id="
                     $q.dark.isActive ? 'sqlhottable-dark' : 'sqlhottable-light'
@@ -234,7 +247,7 @@
   </div>
 </template>
 <script>
-import { uid } from 'quasar'
+import { uid } from "quasar";
 import { codemirror } from "vue-codemirror";
 import { HotTable } from "@handsontable/vue";
 import "codemirror/mode/sql/sql.js";
@@ -247,7 +260,7 @@ export default {
   data() {
     return {
       collapsed: false,
-      tablekey:uid(),
+      tablekey: uid(),
       hotSettings: {
         data: [],
         licenseKey: "non-commercial-and-evaluation",
@@ -256,7 +269,12 @@ export default {
         width: "100%",
         height: "calc(100vh - 432px)",
         colHeaders: [],
-        code:''
+        code: "",
+        cells: function() {
+          var cellProperties = {};
+          cellProperties.readOnly = true;
+          return cellProperties;
+        }
       },
       tabData: {},
       tab: "",
@@ -300,7 +318,52 @@ export default {
     };
   },
   methods: {
-    generateNewTableKey(){
+    closeTab(tab) {
+      this.$q
+        .dialog({
+          title: "Confirm",
+          message: "Are you sure you want to close " + tab + "?",
+          cancel: true,
+          persistent: true
+        })
+        .onOk(() => {
+          let index = -1;
+          this.tabs.map((t, i) => {
+            if (t.name == tab) {
+              index = i;
+            }
+          });
+          if (index !== -1) {
+            if (
+              tab === this.tab &&
+              index <= this.tabs.length - 1 &&
+              index > 0
+            ) {
+              this.tab = this.tabs[index - 1].name;
+            } else if (
+              tab === this.tab &&
+              index === 0 &&
+              this.tabs.length > 1
+            ) {
+              this.tab = this.tabs[1].name;
+            } else if (
+              tab === this.tab &&
+              index === 0 &&
+              this.tabs.length === 1
+            ) {
+              return;
+            }
+            this.tabs.splice(index, 1);
+            delete this.tabData[tab];
+          } else {
+            this.$q.notify({
+              message: "Couldn't find tab",
+              color: "negative "
+            });
+          }
+        });
+    },
+    generateNewTableKey() {
       this.tablekey = uid();
     },
     collapseLeftSide() {
@@ -315,7 +378,7 @@ export default {
           this.splitterModel = 15;
         }
       }
-      this.generateNewTableKey()
+      this.generateNewTableKey();
     },
     async executeSqlStatement() {
       let done = false;
@@ -326,14 +389,18 @@ export default {
         this.loadingTable = true;
       }, 500);
       let data = await this.$M("EXECUTESQL^%YDBWEBTBLS", {
-        STATEMENT: this.tabData[this.tab]['hotSettings'].code
+        STATEMENT: this.tabData[this.tab]["hotSettings"].code
       });
       done = true;
       this.loadingTable = false;
-      let code = this.tabData[this.tab]["hotSettings"]['code']
-      this.$set(this.tabData,this.tab,{});
-      this.$set(this.tabData[this.tab],"hotSettings",Object.assign({},this.hotSettings));
-      this.tabData[this.tab]["hotSettings"]['code'] = code
+      let code = this.tabData[this.tab]["hotSettings"]["code"];
+      this.$set(this.tabData, this.tab, {});
+      this.$set(
+        this.tabData[this.tab],
+        "hotSettings",
+        Object.assign({}, this.hotSettings)
+      );
+      this.tabData[this.tab]["hotSettings"]["code"] = code;
       if (data && data.RESULT) {
         this.$set(
           this.tabData[this.tab]["hotSettings"],
@@ -346,7 +413,7 @@ export default {
           data.RESULT[0]
         );
       }
-      this.generateNewTableKey()
+      this.generateNewTableKey();
     },
     getCurrentActiveTable(tbl) {
       return this.tab === tbl;
@@ -381,15 +448,21 @@ export default {
         }
       });
       if (!found) {
-        this.tabs.unshift(tab);
+        this.tabs.push(tab);
       }
       this.tab = tab.name;
       this.selectedTblNode = "";
       this.selectedTbl = tbl;
       this.loadedNodesMessage = "";
-      this.$set(this.tabData,this.tab,{});
-      this.$set(this.tabData[this.tab],"hotSettings",Object.assign({},this.hotSettings));
-      this.tabData[this.tab]['hotSettings'].code = `SELECT * FROM ${tbl.T} LIMIT 100;`;
+      this.$set(this.tabData, this.tab, {});
+      this.$set(
+        this.tabData[this.tab],
+        "hotSettings",
+        Object.assign({}, this.hotSettings)
+      );
+      this.tabData[this.tab][
+        "hotSettings"
+      ].code = `SELECT * FROM ${tbl.T} LIMIT 100;`;
       this.currentActiveTable = tbl.T;
       await this.executeSqlStatement();
     },
@@ -443,7 +516,7 @@ export default {
       this.$refs.infscroll.trigger();
     },
     onCmCodeChange(newCode) {
-      this.tabData[this.tab]['hotSettings'].code = newCode;
+      this.tabData[this.tab]["hotSettings"].code = newCode;
     }
   },
   computed: {
@@ -452,7 +525,7 @@ export default {
     },
     codemirror() {
       return this.$refs.cmEditor.codemirror;
-    },
+    }
   },
   watch: {
     theme(v) {
@@ -473,8 +546,8 @@ export default {
     collapsed(v) {
       this.$q.localStorage.set("ydb-tables-collapsed", v);
     },
-    tab(v){
-      this.generateNewTableKey()
+    tab(v) {
+      this.generateNewTableKey();
     }
   },
   async created() {
@@ -498,16 +571,18 @@ export default {
 @import "~handsontable/dist/handsontable.full.css";
 @import "../../../node_modules/codemirror/lib/codemirror.css";
 @import "../../../node_modules/codemirror/theme/abcdef.css";
-#sqlhottable-dark > .handsontable td {
+#sqlhottable-dark > .handsontable td, #sqlhottable-dark > .handsontable .htDimmed {
   background-color: #000000;
+  color: #ffffff;
 }
 #sqlhottable-dark > .handsontable th {
   color: #ffffff;
   background-color: rgb(83, 83, 83);
 }
 
-#sqlhottable-light > .handsontable td {
+#sqlhottable-light > .handsontable#codeMirrorTables >  td, #sqlhottable-light > .handsontable .htDimmed {
   background-color: #ffffff;
+  color: #000000;
 }
 #sqlhottable-light > .handsontable th {
   color: #000000;

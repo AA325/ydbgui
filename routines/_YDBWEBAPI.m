@@ -40,3 +40,4 @@ PING(I,O)
 ERR ;
 	S @R@("ERROR")=$ZSTATUS
 	Q
+	;

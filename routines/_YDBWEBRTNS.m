@@ -59,6 +59,9 @@ SAVEROUTINE(I,O)
 	S R=$NA(O("data"))
 	I $E(RTN)="%" S $E(RTN)="_"
 	D WriteFile^%YDBUTILS(PATH_RTN_".m",.DATA)
+    I $$FileExists^%YDBUTILS(PATH_RTN_".m") D  I 1
+	. D ReadFileByLine^%YDBUTILS(PATH_RTN_".m",.FILE) 
+	M @R@("CODE")=FILE ZK @R@("CODE")
 	S @R@("STATUS")="true"
 	Q
 	;

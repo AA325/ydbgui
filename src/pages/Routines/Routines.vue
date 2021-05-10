@@ -20,41 +20,53 @@
   <div class="q-pa-md" id="routinesDiv">
     <q-page-sticky position="top-right" :offset="[20, 3]">
       <q-btn
-        fab
         icon="delete"
         @click="deleteRoutine"
-        padding="sm"
-        :color="'negative'"
-        style="margin-right:15px"
-      />
+        size="md"
+        padding="0px"
+        style="margin-right:15px;margin-top:10px"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+        flat
+        ><q-tooltip>Delete Routine?</q-tooltip></q-btn
+      >
       <q-btn
-        fab
         icon="save"
         @click="saveRoutine"
-        padding="sm"
-        :color="$q.dark.isActive ? 'purple' : 'orange'"
-        style="margin-right:15px"
-      />
+        size="md"
+        padding="0px"
+        style="margin-right:15px;margin-top:10px"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+        flat
+        ><q-tooltip>Save Routine?</q-tooltip></q-btn
+      >
       <q-btn
-        fab
         icon="add"
         @click="createRoutine"
-        padding="sm"
-        :color="'orange'"
-      />
+        padding="0px"
+        size="md"
+        style=";margin-top:10px"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+        flat
+        ><q-tooltip>Create Routine?</q-tooltip></q-btn
+      >
       <!-- <q-btn fab icon="delete" padding="xs" :color="'red'" /> -->
     </q-page-sticky>
-    <div style="padding:5px">
-      <q-breadcrumbs gutter="xs">
+    <div class="row">
+      <q-btn
+        @click="collapseLeftSide"
+        :fab="collapsed"
+        :flat="!collapsed"
+        dense
+        padding="0px"
+        icon="push_pin"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+      />
+      <q-breadcrumbs gutter="xs" style="padding-left:10px;">
         <q-breadcrumbs-el label="Home" />
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="Routines" />
         <q-breadcrumbs-el
-          :label="
-            currentActivePath + currentActiveRoutine
-              ? currentActivePath + currentActiveRoutine + '.m'
-              : ''
-          "
+          :label="tabData[tab].path + tabData[tab].name ? tabData[tab].path + tabData[tab].name + '.m' : ''"
         />
       </q-breadcrumbs>
     </div>
@@ -62,9 +74,17 @@
       v-model="splitterModel"
       style="height:calc(100vh - 121px)"
       v-if="!loading && !loadingDialog"
+      :limits="[0, 50]"
     >
       <template v-slot:before>
-        <span :class="$q.dark.isActive?'text-orange text-center':'text-purple text-center'" style="font-size:28px;padding:25px">
+        <span
+          :class="
+            $q.dark.isActive
+              ? 'text-orange text-center'
+              : 'text-purple text-center'
+          "
+          style="font-size:28px;padding:25px"
+        >
           Routines
         </span>
         <q-infinite-scroll
@@ -102,8 +122,9 @@
             <q-list>
               <q-item>
                 <q-item-section>
-                  <q-item-label overline
-                  :class="$q.dark.isActive?'text-orange':'text-purple'"
+                  <q-item-label
+                    overline
+                    :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
                     >{{ routineTotal }} Routines</q-item-label
                   >
                   <!--
@@ -153,11 +174,43 @@
       </template>
 
       <template v-slot:after>
+        <div class="q-pa-xs">
+        <q-tabs
+          v-model="tab"
+          inline-label
+          outside-arrows
+          dense
+          align="left"
+          :class="
+            $q.dark.isActive ? 'text-orange text-bold' : 'text-purple text-bold'
+          "
+          :breakpoint="0"
+        >
+          <q-tab
+            ripple
+            no-caps
+            v-for="tab in tabs"
+            :key="tab.name"
+            v-bind="tab"
+          >
+            <q-btn
+              dense
+              padding="5px"
+              flat
+              size="sm"
+              icon="close"
+              @click="closeTab(tab.name)"
+              :disable="tabs.length === 1"
+            />
+          </q-tab>
+        </q-tabs>
+        </div>
         <codemirror
+          :key="'code-panel' + tablekey"
           id="codeMirrorRoutines"
-          v-if="code.length > 0"
+          v-if="tabData && tabData[tab]"
           ref="cmEditor"
-          :value="code"
+          :value="tabData[tab].code"
           :options="cmOptions"
           @ready="onCmReady"
           @focus="onCmFocus"
@@ -227,6 +280,7 @@
   </div>
 </template>
 <script>
+import { uid } from "quasar";
 import { codemirror } from "vue-codemirror";
 import "codemirror/mode/mumps/mumps.js";
 
@@ -237,6 +291,11 @@ export default {
   },
   data() {
     return {
+      tablekey: uid(),
+      tabData: {},
+      tab: "",
+      tabs: [],
+      collapsed: false,
       newRoutinePath: "",
       newRoutinePaths: [],
       newRoutineName: "",
@@ -247,9 +306,6 @@ export default {
       shownRoutineIndex: 0,
       routinePatchCount: 100,
       finishedLoadingAllRoutines: false,
-      currentActiveRoutine: "",
-      currentActivePath: "",
-      code: "",
       cmOptions: {
         tabSize: 4,
         mode: {
@@ -272,6 +328,68 @@ export default {
     };
   },
   methods: {
+    generateNewTableKey() {
+      this.tablekey = uid();
+    },
+    closeTab(tab) {
+      this.$q
+        .dialog({
+          title: "Confirm",
+          message: "Are you sure you want to close " + tab + "?",
+          cancel: true,
+          persistent: true
+        })
+        .onOk(() => {
+          let index = -1;
+          this.tabs.map((t, i) => {
+            if (t.name == tab) {
+              index = i;
+            }
+          });
+          if (index !== -1) {
+            if (
+              tab === this.tab &&
+              index <= this.tabs.length - 1 &&
+              index > 0
+            ) {
+              this.tab = this.tabs[index - 1].name;
+            } else if (
+              tab === this.tab &&
+              index === 0 &&
+              this.tabs.length > 1
+            ) {
+              this.tab = this.tabs[1].name;
+            } else if (
+              tab === this.tab &&
+              index === 0 &&
+              this.tabs.length === 1
+            ) {
+              return;
+            }
+            this.tabs.splice(index, 1);
+            delete this.tabData[tab];
+          } else {
+            this.$q.notify({
+              message: "Couldn't find tab",
+              color: "negative "
+            });
+          }
+        });
+    },
+    collapseLeftSide() {
+      this.collapsed = !this.collapsed;
+      if (this.collapsed) {
+        this.splitterModel = 0;
+      } else {
+        this.splitterModel = this.$q.localStorage.getItem(
+          "ydb-routines-splitter"
+        );
+        if (this.splitterModel === 0) {
+          this.splitterModel = 15;
+        }
+      }
+      this.generateNewTableKey();
+    },
     checkRoutineName(value) {
       let valid = true;
       if (!value) {
@@ -293,7 +411,7 @@ export default {
       return valid;
     },
     getCurrentActiveRoutine(rtn) {
-      return this.currentActiveRoutine === rtn;
+      return this.tab === rtn;
     },
     loadMoreRoutines(index, done) {
       this.shownRoutineIndex = index;
@@ -316,17 +434,42 @@ export default {
       this.$refs.infscroll.stop();
     },
     async populateRoutine(rtn) {
+      let tab = {
+        name: rtn.r,
+        label: rtn.r,
+        path: rtn.p
+      };
+      let found = false;
+      this.tabs.map(t => {
+        if (
+          t.name === tab.name &&
+          t.label === tab.label &&
+          t.path === tab.path
+        ) {
+          found = true;
+        }
+      });
+      if (!found) {
+        this.tabs.push(tab);
+      }
+      this.tab = tab.name;
+      this.$set(this.tabData, this.tab, {});
+      this.$set(
+        this.tabData[this.tab],
+        "code",
+        (this.tabData[this.tab] && this.tabData[this.tab].code) || ""
+      );
+      this.$set(this.tabData[this.tab], "name", rtn.r);
+      this.$set(this.tabData[this.tab], "path", rtn.p);
       let data = await this.$M("POPULATEROUTINE^%YDBWEBRTNS", {
         RTN: rtn.r,
         PATH: rtn.p
       });
-      if (data.STATUS && data.CODE && data.CODE.length > 0) {
-        this.code = data.CODE.join("\n");
-        this.currentActiveRoutine = rtn.r;
-        this.currentActivePath = rtn.p;
+      if (data && data.STATUS && data.CODE && data.CODE.length > 0) {
+        this.$set(this.tabData[this.tab], "code", data.CODE.join("\n"));
+        this.$set(this.tabData[this.tab], "name", rtn.r);
+        this.$set(this.tabData[this.tab], "path", rtn.p);
       } else {
-        this.currentActiveRoutine = "";
-        this.currentActivePath = "";
         this.$q.notify({
           message: "Routine could not be found!",
           color: "negative"
@@ -386,7 +529,7 @@ export default {
     onCmReady(cm) {},
     onCmFocus(cm) {},
     onCmCodeChange(newCode) {
-      this.code = newCode;
+      this.tabData[this.tab]["code"] = newCode;
     },
     loadMoreScrolledRoutines() {
       this.$refs.infscroll.resume();
@@ -394,11 +537,15 @@ export default {
     },
     async saveRoutine() {
       let data = await this.$M("SAVEROUTINE^%YDBWEBRTNS", {
-        ROUTINE: this.currentActiveRoutine,
-        PATH: this.currentActivePath,
-        DATA: this.code.split("\n")
+        ROUTINE: this.tabData[this.tab].name,
+        PATH: this.tabData[this.tab].path,
+        DATA: this.tabData[this.tab].code.split("\n")
       });
-      if (data.STATUS) {
+      if (
+        data.STATUS &&
+        data.CODE &&
+        data.CODE.join("\n") === this.tabData[this.tab].code
+      ) {
         this.$q.notify({
           message: "Routine saved!",
           color: "positive"
@@ -416,15 +563,15 @@ export default {
           title: "Delete Routine",
           message:
             "Are you sure you want to delete " +
-            this.currentActivePath +
-            this.currentActiveRoutine,
+            this.tabData[this.tab].path +
+            this.tabData[this.tab].name,
           cancel: true,
           persistent: true
         })
         .onOk(async () => {
           let data = await this.$M("DELETEROUTINE^%YDBWEBRTNS", {
-            ROUTINE: this.currentActiveRoutine,
-            PATH: this.currentActivePath
+            ROUTINE: this.tabData[this.tab].name,
+            PATH: this.tabData[this.tab].path
           });
           if (data.STATUS) {
             this.$q.notify({
@@ -509,7 +656,15 @@ export default {
   },
   watch: {
     splitterModel(v) {
-      this.$q.localStorage.set("ydb-routines-splitter", v);
+      if (v === 0) {
+        this.collapsed = true;
+      } else {
+        this.collapsed = false;
+        this.$q.localStorage.set("ydb-routines-splitter", v);
+      }
+    },
+    collapsed(v) {
+      this.$q.localStorage.set("ydb-routines-collapsed", v);
     },
     theme(v) {
       if (v) {
@@ -517,12 +672,18 @@ export default {
       } else {
         this.$set(this.cmOptions, "theme", "default");
       }
+    },
+    tab(v) {
+      this.generateNewTableKey();
     }
   },
-  created() {
-    let splitterModel = this.$q.localStorage.getItem("ydb-routines-splitter");
-    if (splitterModel) {
-      this.splitterModel = splitterModel;
+  async created() {
+    this.collapsed = !!this.$q.localStorage.getItem("ydb-routines-collapsed");
+    if (this.collapsed) {
+      this.splitterModel = 0;
+    } else {
+      this.splitterModel =
+        this.$q.localStorage.getItem("ydb-routines-splitter") || 15;
     }
   },
   async mounted() {
@@ -538,6 +699,6 @@ export default {
 @import "../../../node_modules/codemirror/theme/abcdef.css";
 #codeMirrorRoutines > .CodeMirror {
   border: 1px solid #eee;
-  height: calc(100vh - 121px);
+  height: calc(100vh - 165px);
 }
 </style>
