@@ -1,20 +1,15 @@
-%YDBWEBAPI ; Ahmed Abdelrazek ; 05/07/2021 ; YottaDB Web Server API Entry Point
-	; Copyright (C) 2021 YottaDB, LLC
-	; Author: Ahmed Abdelrazek
-	;
-	; This program is free software: you can redistribute it and/or modify
-	; it under the terms of the GNU Affero General Public License as
-	; published by the Free Software Foundation, either version 3 of the
-	; License, or (at your option) any later version. ;
-	;
-	; This program is distributed in the hope that it will be useful,
-	; but WITHOUT ANY WARRANTY; without even the implied warranty of
-	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	; GNU Affero General Public License for more details. ;
-	;
-	; You should have received a copy of the GNU Affero General Public License
-	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
-	;
+%YDBWEBAPI ; YottaDB Web Server API Entry Point; 05-07-2021
+	;#################################################################
+	;#                                                               #
+	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# All rights reserved.                                          #
+	;#                                                               #
+	;#   This source code contains the intellectual property         #
+	;#   of its copyright holder(s), and is made available           #
+	;#   under a license.  If you do not know the terms of           #
+	;#   the license, please stop and do not read further.           #
+	;#                                                               #
+	;#################################################################		
 	Q
 	;
 API(%Q,%R,%A)
@@ -40,4 +35,5 @@ PING(I,O)
 ERR ;
 	S @R@("ERROR")=$ZSTATUS
 	Q
+	;
 	;

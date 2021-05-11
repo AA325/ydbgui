@@ -1,32 +1,32 @@
 <!--
-	; Copyright (C) 2021 YottaDB, LLC
-	; Author: Ahmed Abdelrazek
-	;
-	; This program is free software: you can redistribute it and/or modify
-	; it under the terms of the GNU Affero General Public License as
-	; published by the Free Software Foundation, either version 3 of the
-	; License, or (at your option) any later version. ;
-	;
-	; This program is distributed in the hope that it will be useful,
-	; but WITHOUT ANY WARRANTY; without even the implied warranty of
-	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	; GNU Affero General Public License for more details. ;
-	;
-	; You should have received a copy of the GNU Affero General Public License
-	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
-	;
+#################################################################
+#                                                               #
+# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# All rights reserved.                                          #
+#                                                               #
+#   This source code contains the intellectual property         #
+#   of its copyright holder(s), and is made available           #
+#   under a license.  If you do not know the terms of           #
+#   the license, please stop and do not read further.           #
+#                                                               #
+#################################################################
 -->
 <template>
   <div class="q-pa-md" id="globalsDiv">
-    <div style="padding:5px">
-      <q-breadcrumbs gutter="xs">
+    <div class="row">
+      <q-btn
+        @click="collapseLeftSide"
+        :fab="collapsed"
+        :flat="!collapsed"
+        dense
+        padding="0px"
+        icon="push_pin"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+      />
+      <q-breadcrumbs gutter="xs" style="padding-left:10px;">
         <q-breadcrumbs-el label="Home" />
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="Globals" />
-        <q-breadcrumbs-el
-          v-if="!showLoadedNodesBanner && loadedNodesMessage"
-          :label="loadedNodesMessage"
-        />
       </q-breadcrumbs>
       <transition
         appear
@@ -53,12 +53,16 @@
       leave-active-class="animated fadeOut"
     >
       <q-splitter
+        :limits="[0, 50]"
         v-model="splitterModel"
         style="height:calc(100vh - 125px)"
         v-if="!loading && !loadingDialog"
       >
         <template v-slot:before>
-          <span :class="$q.dark.isActive?'text-orange':'text-purple'" style="font-size:28px;padding:5px">
+          <span
+            :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
+            style="font-size:28px;padding:5px"
+          >
             Globals
           </span>
           <q-infinite-scroll
@@ -96,8 +100,9 @@
               <q-list>
                 <q-item>
                   <q-item-section>
-                    <q-item-label overline
-                    :class="$q.dark.isActive?'text-orange':'text-purple'"
+                    <q-item-label
+                      overline
+                      :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
                       >{{ globalTotal }} Global(s)</q-item-label
                     >
                     <!--
@@ -113,10 +118,7 @@
                   <q-item
                     dense
                     clickable
-                    @click="
-                      filteredGlbl = '';
-                      populateGlobal(glbl);
-                    "
+                    @click="populateGlobal(glbl.g)"
                     :active="getCurrentActiveGlobal(glbl.g)"
                   >
                     <q-item-section>
@@ -150,6 +152,39 @@
         </template>
 
         <template v-slot:after>
+          <div class="q-pa-xs">
+            <q-tabs
+              v-model="tab"
+              inline-label
+              outside-arrows
+              dense
+              align="left"
+              :class="
+                $q.dark.isActive
+                  ? 'text-orange text-bold'
+                  : 'text-purple text-bold'
+              "
+              :breakpoint="0"
+            >
+              <q-tab
+                ripple
+                no-caps
+                v-for="tab in tabs"
+                :key="tab.name"
+                v-bind="tab"
+              >
+                <q-btn
+                  dense
+                  padding="5px"
+                  flat
+                  size="sm"
+                  icon="close"
+                  @click="closeTab(tab.name)"
+                  :disable="tabs.length === 1"
+                />
+              </q-tab>
+            </q-tabs>
+          </div>
           <div class="q-pa-md q-col-gutter-sm">
             <div
               v-if="loadingNodes"
@@ -161,58 +196,72 @@
                 size="10em"
               />
             </div>
-            <div class="row">
+            <q-card>
+            <div class="row" v-if="tabData && tabData[tab] && tabData[tab]">
               <div class="col-8" style="padding:5px" v-show="!loadingNodes">
                 <q-input
                   filled
                   bottom-slots
-                  v-model="filteredGlbl"
+                  v-model="tabData[tab].filteredGlbl"
                   label="Globals Subscript Search"
                   :dense="true"
-                  @keydown.enter="populateGlobal(selectedGlbl)"
+                  @keydown.enter="populateGlobal(tab)"
                 >
                   <template v-slot:append>
                     <q-icon
-                      v-if="filteredGlbl !== ''"
+                      v-if="
+                        tabData &&
+                          tabData[tab] &&
+                          tabData[tab].filteredGlbl !== ''
+                      "
                       name="close"
                       @click="
-                        filteredGlbl = '';
-                        populateGlobal(selectedGlbl);
+                        tabData[tab].filteredGlbl = '';
+                        populateGlobal(tab);
                       "
                       class="cursor-pointer"
                     />
                     <q-icon
                       name="search"
                       class="cursor-pointer"
-                      @click="populateGlobal(selectedGlbl)"
+                      @click="populateGlobal(tab)"
                     />
                   </template>
                 </q-input>
               </div>
               <div class="col-4" style="padding:5px" v-show="!loadingNodes">
                 <q-select
-                  @input="populateGlobal(selectedGlbl)"
+                  @input="populateGlobal(tab)"
                   dense
                   filled
-                  v-model="nodesPagingSize"
+                  v-model="tabData[tab].nodesPagingSize"
                   :options="[100, 500, 1000]"
                   label="Number of nodes to show"
                 />
               </div>
             </div>
-            <div class="row" v-show="!loadingNodes">
+            <div
+              class="row"
+              v-show="!loadingNodes"
+              v-if="tabData && tabData[tab] && tabData[tab]"
+            >
               <q-tree
-                :nodes="globalNodes"
+                :nodes="tabData && tabData[tab] && tabData[tab].globalNodes"
                 node-key="key"
-                :selected.sync="selectedGlblNode"
+                :selected.sync="tabData[tab].selectedGlblNode"
                 @lazy-load="onLazyLoadGlobalNodes"
                 icon="arrow_forward_ios"
               >
                 <template v-slot:default-body="prop">
-                  <pre :class="$q.dark.isActive?'text-orange':'text-purple'" style="margin:0px 0px 15px 33px;padding:0px">{{ prop.node.story }}</pre>
+                  <pre
+                    :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
+                    style="margin:0px 0px 0px 0px;padding:0px"
+                    >{{ prop.node.story }}</pre
+                  >
                 </template>
               </q-tree>
             </div>
+            </q-card>
           </div>
         </template>
       </q-splitter>
@@ -237,13 +286,14 @@
       </q-card>
     </q-dialog>
     <q-drawer
+      v-if="tabData && tabData[tab] && tabData[tab]"
       side="right"
-      v-model="globalRightDrawer"
+      v-model="tabData[tab].globalRightDrawer"
       @hide="
-        code = '';
-        codeIcon = '';
-        globalRightDrawer = false;
-        selectedGlblNode = '';
+        tabData[tab].code = '';
+        tabData[tab].codeIcon = '';
+        tabData[tab].globalRightDrawer = false;
+        tabData[tab].selectedGlblNode = '';
       "
       bordered
       :width="800"
@@ -265,29 +315,34 @@
             icon="close"
             color="white"
             @click="
-              code = '';
-              codeIcon = '';
-              globalRightDrawer = false;
-              selectedGlblNode = '';
+              tabData[tab].code = '';
+              tabData[tab].codeIcon = '';
+              tabData[tab].globalRightDrawer = false;
+              tabData[tab].selectedGlblNode = '';
             "
           />
         </q-bar>
         <q-card-section>
-          <q-icon :name="codeIcon" style="font-size: 5rem;" />
-          <span class="wraptext">{{ selectedGlblNode }}</span>
+          <q-icon
+            :name="tabData && tabData[tab] && tabData[tab].codeIcon"
+            style="font-size: 5rem;"
+          />
+          <span class="wraptext">{{
+            tabData && tabData[tab] && tabData[tab].selectedGlblNode
+          }}</span>
         </q-card-section>
         <q-card-section>
           <codemirror
             id="codeMirrorGlobals"
             ref="cmEditor"
             @input="onCmCodeChange"
-            :value="code"
+            :value="tabData && tabData[tab] && tabData[tab].code"
             :options="cmOptions"
           />
         </q-card-section>
         <q-card-section>
           <pre>
-            Character Count: {{ code.length }}
+            Character Count: {{ tabData[tab].code.length }}
           </pre>
           <div class="q-gutter-sm">
             <q-radio v-model="codeLineBreak" :val="true" label="Wrap Line(s)" />
@@ -307,7 +362,11 @@
             @click="killGlobal"
           />
           <q-btn
-            v-if="codeIcon !== 'text_snippet'"
+            v-if="
+              tabData &&
+                tabData[tab] &&
+                tabData[tab].codeIcon !== 'text_snippet'
+            "
             flat
             color="purple"
             label="REMOVE VALUE (ZKILL)"
@@ -318,10 +377,10 @@
             color="orange"
             label="CANCEL"
             @click="
-              code = '';
-              codeIcon = '';
-              globalRightDrawer = false;
-              selectedGlblNode = '';
+              tabData[tab].code = '';
+              tabData[tab].codeIcon = '';
+              tabData[tab].globalRightDrawer = false;
+              tabData[tab].selectedGlblNode = '';
             "
           />
         </q-card-actions>
@@ -338,30 +397,24 @@ export default {
   },
   data() {
     return {
-      codeIcon: "",
-      updatedNodeValue:"",
-      globalRightDrawer: false,
-      selectedGlblNode: "",
-      globalNodes: [],
+      tabData: {},
+      tab: "",
+      tabs: [],
+      collapsed: false,
+      updatedNodeValue: "",
       splitterModel: 15,
       searchGlobals: "*",
       shownGlobalList: [],
       shownGlobalIndex: 0,
       globalPatchCount: 100,
       finishedLoadingAllGlobals: false,
-      currentActiveGlobal: "",
-      currentActivePath: "",
       globalsList: [],
-      globalsPaths: [],
       loading: false,
       loadingDialog: false,
       globalTotal: 0,
       loadingNodes: false,
       loadedNodesMessage: "",
       showLoadedNodesBanner: false,
-      selectedGlbl: "",
-      filteredGlbl: "",
-      nodesPagingSize: 100,
       codeLineBreak: false,
       code: "",
       cmOptions: {
@@ -377,8 +430,52 @@ export default {
     };
   },
   methods: {
+    closeTab(tab) {
+      this.$q
+        .dialog({
+          title: "Confirm",
+          message: "Are you sure you want to close " + tab + "?",
+          cancel: true,
+          persistent: true
+        })
+        .onOk(() => {
+          let index = -1;
+          this.tabs.map((t, i) => {
+            if (t.name == tab) {
+              index = i;
+            }
+          });
+          if (index !== -1) {
+            if (
+              tab === this.tab &&
+              index <= this.tabs.length - 1 &&
+              index > 0
+            ) {
+              this.tab = this.tabs[index - 1].name;
+            } else if (
+              tab === this.tab &&
+              index === 0 &&
+              this.tabs.length > 1
+            ) {
+              this.tab = this.tabs[1].name;
+            } else if (
+              tab === this.tab &&
+              index === 0 &&
+              this.tabs.length === 1
+            ) {
+              return;
+            }
+            this.tabs.splice(index, 1);
+            delete this.tabData[tab];
+          } else {
+            this.$q.notify({
+              message: "Couldn't find tab",
+              color: "negative "
+            });
+          }
+        });
+    },
     async onLazyLoadGlobalNodes(node) {
-      // this.selectedGlbl = glbl;
       this.loadedNodesMessage = "";
       let done = false;
       setTimeout(() => {
@@ -389,13 +486,12 @@ export default {
       }, 1000);
       let data = await this.$M("POPULATEGLOBALS^%YDBWEBGLBLS", {
         GLBL: node.key,
-        SEARCH: this.filteredGlbl,
-        SIZE: this.nodesPagingSize
+        SEARCH: this.tabData[this.tab].filteredGlbl,
+        SIZE: this.tabData[this.tab].nodesPagingSize
       });
       done = true;
       this.loadingNodes = false;
       if (data.STATUS) {
-        // this.currentActiveGlobal = glbl.g;
         node.done(data.NODES);
         if (data.MESSAGE && data.MESSAGE.indexOf("out of") > 0) {
           this.loadedNodesMessage = data.MESSAGE;
@@ -414,8 +510,22 @@ export default {
         });
       }
     },
+    collapseLeftSide() {
+      this.collapsed = !this.collapsed;
+      if (this.collapsed) {
+        this.splitterModel = 0;
+      } else {
+        this.splitterModel = this.$q.localStorage.getItem(
+          "ydb-globals-splitter"
+        );
+        if (this.splitterModel === 0) {
+          this.splitterModel = 15;
+        }
+      }
+      this.generateNewTableKey();
+    },
     getCurrentActiveGlobal(glbl) {
-      return this.currentActiveGlobal === glbl;
+      return this.tab === glbl;
     },
     loadMoreGlobals(index, done) {
       this.shownGlobalIndex = index;
@@ -437,8 +547,46 @@ export default {
       this.$refs.infscroll.stop();
     },
     async populateGlobal(glbl) {
-      this.selectedGlblNode = '';
-      this.selectedGlbl = glbl;
+      let tab = {
+        name: glbl,
+        label: glbl
+      };
+      let found = false;
+      this.tabs.map(t => {
+        if (t.name === tab.name && t.label === tab.label) {
+          found = true;
+        }
+      });
+      if (!found) {
+        this.tabs.push(tab);
+      }
+      this.tab = tab.name;
+      this.$set(this.tabData, this.tab, this.tabData[this.tab] || {});
+      this.$set(
+        this.tabData[this.tab],
+        "code",
+        (this.tabData[this.tab] && this.tabData[this.tab].code) || ""
+      );
+      this.$set(
+        this.tabData[this.tab],
+        "globalRightDrawer",
+        (this.tabData[this.tab] && this.tabData[this.tab].globalRightDrawer) ||
+          false
+      );
+      this.$set(
+        this.tabData[this.tab],
+        "filteredGlbl",
+        (this.tabData[this.tab] && this.tabData[this.tab].filteredGlbl) || ""
+      );
+      this.$set(
+        this.tabData[this.tab],
+        "nodesPagingSize",
+        (this.tabData[this.tab] && this.tabData[this.tab].nodesPagingSize) ||
+          100
+      );
+      this.$set(this.tabData[this.tab], "globalNodes", []);
+      this.$set(this.tabData[this.tab], "codeIcon", "");
+      this.$set(this.tabData[this.tab], "selectedGlblNode", "");
       this.loadedNodesMessage = "";
       let done = false;
       setTimeout(() => {
@@ -448,15 +596,14 @@ export default {
         this.loadingNodes = true;
       }, 1000);
       let data = await this.$M("POPULATEGLOBALS^%YDBWEBGLBLS", {
-        GLBL: glbl.g,
-        SEARCH: this.filteredGlbl,
-        SIZE: this.nodesPagingSize
+        GLBL: this.tab,
+        SEARCH: this.tabData[this.tab].filteredGlbl,
+        SIZE: this.tabData[this.tab].nodesPagingSize
       });
       done = true;
       this.loadingNodes = false;
       if (data.STATUS) {
-        this.currentActiveGlobal = glbl.g;
-        this.globalNodes = data.NODES;
+        this.$set(this.tabData[this.tab], "globalNodes", data.NODES);
 
         if (data.MESSAGE && data.MESSAGE.indexOf("out of") > 0) {
           this.loadedNodesMessage = data.MESSAGE;
@@ -468,7 +615,7 @@ export default {
           this.loadedNodesMessage = data.MESSAGE;
         }
       } else {
-        this.globalNodes = [];
+        this.$set(this.tabData[this.tab], "globalNodes", []);
         this.$q.notify({
           message: "Globals could not be found!",
           color: "negative"
@@ -543,7 +690,7 @@ export default {
       return { code, icon };
     },
     onCmCodeChange(newCode) {
-      this.code = newCode;
+      this.$set(this.tabData[this.tab], "code", newCode);
     },
     async saveGlobal() {
       this.$q
@@ -555,8 +702,8 @@ export default {
         })
         .onOk(async () => {
           let data = await this.$M("SAVEGLOBAL^%YDBWEBGLBLS", {
-            GLOBAL: this.selectedGlblNode,
-            VALUE: this.code
+            GLOBAL: this.tabData[this.tab].selectedGlblNode,
+            VALUE: this.tabData[this.tab].code
           });
           if (data && data.STATUS) {
             this.$q.notify({
@@ -564,11 +711,11 @@ export default {
               color: "positive"
             });
             this.updateIcon(data.ICON);
-            this.updateValue(data.VALUE)
-            this.globalRightDrawer = false;
-            this.code = "";
-            this.codeIcon = "";
-            this.selectedGlblNode = "";
+            this.updateValue(data.VALUE);
+            this.$set(this.tabData[this.tab], "globalRightDrawer", false);
+            this.$set(this.tabData[this.tab], "code", "");
+            this.$set(this.tabData[this.tab], "codeIcon", "");
+            this.$set(this.tabData[this.tab], "selectedGlblNode", "");
           } else {
             this.$q.notify({
               message: "Error ocurred. Global not saved!",
@@ -588,7 +735,7 @@ export default {
         })
         .onOk(async () => {
           let data = await this.$M("ZKILLLOBAL^%YDBWEBGLBLS", {
-            GLOBAL: this.selectedGlblNode
+            GLOBAL: this.tabData[this.tab].selectedGlblNode
           });
           if (data && data.STATUS) {
             this.$q.notify({
@@ -596,11 +743,11 @@ export default {
               color: "positive"
             });
             this.updateIcon(data.ICON);
-            this.updateValue('')
-            this.globalRightDrawer = false;
-            this.code = "";
-            this.codeIcon = "";
-            this.selectedGlblNode = "";
+            this.updateValue("");
+            this.$set(this.tabData[this.tab], "globalRightDrawer", false);
+            this.$set(this.tabData[this.tab], "code", "");
+            this.$set(this.tabData[this.tab], "codeIcon", "");
+            this.$set(this.tabData[this.tab], "selectedGlblNode", "");
           } else {
             this.$q.notify({
               message: "Error ocurred. Global not ZKILLED!",
@@ -619,29 +766,18 @@ export default {
         })
         .onOk(async () => {
           let data = await this.$M("KILLGLOBAL^%YDBWEBGLBLS", {
-            GLOBAL: this.selectedGlblNode
+            GLOBAL: this.tabData[this.tab].selectedGlblNode
           });
           if (data && data.STATUS) {
             this.$q.notify({
               message: "Global killed!",
               color: "positive"
             });
-            this.globalRightDrawer = false;
-            this.code = "";
-            this.codeIcon = "";
-            this.selectedGlblNode = "";
-            this.globalNodes = "";
-            this.shownGlobalList = [];
-            this.shownGlobalIndex = 0;
-            this.currentActiveGlobal = "";
-            this.globalsList = [];
-            this.globalTotal = 0;
-            this.selectedGlbl = "";
-            this.filteredGlbl = "";
-            await this.getGlobals();
-            if (this.shownGlobalList[0]) {
-              this.populateGlobal(this.shownGlobalList[0]);
-            }
+            this.deleteNode(this.tabData[this.tab].selectedGlblNode);
+            this.$set(this.tabData[this.tab], "globalRightDrawer", false);
+            this.$set(this.tabData[this.tab], "code", "");
+            this.$set(this.tabData[this.tab], "codeIcon", "");
+            this.$set(this.tabData[this.tab], "selectedGlblNode", "");
           } else {
             this.$q.notify({
               message: "Error ocurred. Global not killed!",
@@ -650,39 +786,67 @@ export default {
           }
         });
     },
-    updateIcon(icon) {
+    deleteNode(node) {
       let self = this;
-      let nodes = this.globalNodes;
+      let nodes = this.tabData[this.tab].globalNodes;
       function parseObjectProperties(obj) {
         for (var k in obj) {
           if (typeof obj[k] === "object" && obj[k] !== null) {
             parseObjectProperties(obj[k]);
           } else if (obj.hasOwnProperty(k)) {
-            if (k === "key" && obj[k] === self.selectedGlblNode) {
+            if (k === "key" && obj[k] === node) {
+              obj["icon"] = "delete";
+              obj["label"] = obj["label"] + " " + "(killed)";
+              obj["expandable"] = false;
+              obj["story"] = "";
+              obj["selectable"] = false;
+              delete obj.children;
+            }
+          }
+        }
+      }
+      parseObjectProperties(nodes);
+      this.$set(this.tabData[this.tab], nodes, []);
+    },
+    updateIcon(icon) {
+      let self = this;
+      let nodes = this.tabData[this.tab].globalNodes;
+      function parseObjectProperties(obj) {
+        for (var k in obj) {
+          if (typeof obj[k] === "object" && obj[k] !== null) {
+            parseObjectProperties(obj[k]);
+          } else if (obj.hasOwnProperty(k)) {
+            if (
+              k === "key" &&
+              obj[k] === self.tabData[self.tab].selectedGlblNode
+            ) {
               obj["icon"] = icon;
             }
           }
         }
       }
       parseObjectProperties(nodes);
-      this.globalNodes = nodes;
+      this.$set(this.tabData[this.tab], nodes, []);
     },
-    updateValue(value){
+    updateValue(value) {
       let self = this;
-      let nodes = this.globalNodes;
+      let nodes = this.tabData[this.tab].globalNodes;
       function parseObjectProperties(obj) {
         for (var k in obj) {
           if (typeof obj[k] === "object" && obj[k] !== null) {
             parseObjectProperties(obj[k]);
           } else if (obj.hasOwnProperty(k)) {
-            if (k === "key" && obj[k] === self.selectedGlblNode) {
+            if (
+              k === "key" &&
+              obj[k] === self.tabData[self.tab].selectedGlblNode
+            ) {
               obj["story"] = value;
             }
           }
         }
       }
       parseObjectProperties(nodes);
-      this.globalNodes = nodes;
+      this.$set(this.tabData[this.tab], nodes, []);
     }
   },
   computed: {
@@ -691,9 +855,27 @@ export default {
     },
     codemirror() {
       return this.$refs.cmEditor.codemirror;
+    },
+    selectedGlblNode() {
+      return (
+        this.tabData &&
+        this.tabData[this.tab] &&
+        this.tabData[this.tab].selectedGlblNode
+      );
     }
   },
   watch: {
+    splitterModel(v) {
+      if (v === 0) {
+        this.collapsed = true;
+      } else {
+        this.collapsed = false;
+        this.$q.localStorage.set("ydb-globals-splitter", v);
+      }
+    },
+    collapsed(v) {
+      this.$q.localStorage.set("ydb-globals-collapsed", v);
+    },
     codeLineBreak(v) {
       if (v) {
         this.$set(this.cmOptions, "lineWrapping", true);
@@ -708,32 +890,38 @@ export default {
         this.$set(this.cmOptions, "theme", "default");
       }
     },
-    async selectedGlblNode(v) {
-      if (v) {
-        let data = await this.getSelectedGlobalValue(v);
-        this.code = String(data.code);
-        this.codeIcon = data.icon;
-        this.globalRightDrawer = true;
-      } else {
-        this.globalRightDrawer = false;
-        this.code = "";
-        this.codeIcon = "";
-      }
+    selectedGlblNode: {
+      async handler(v) {
+        if (v) {
+          let data = await this.getSelectedGlobalValue(v);
+          this.$set(this.tabData[this.tab], "code", String(data.code));
+          this.$set(this.tabData[this.tab], "codeIcon", data.icon);
+          this.$set(this.tabData[this.tab], "globalRightDrawer", true);
+        } else {
+          this.$set(this.tabData[this.tab], "globalRightDrawer", false);
+          this.$set(this.tabData[this.tab], "code", "");
+          this.$set(this.tabData[this.tab], "codeIcon", "");
+        }
+      },
+      deep: true
     },
     splitterModel(v) {
       this.$q.localStorage.set("ydb-globals-splitter", v);
     }
   },
   created() {
-    let splitterModel = this.$q.localStorage.getItem("ydb-globals-splitter");
-    if (splitterModel) {
-      this.splitterModel = splitterModel;
+    this.collapsed = !!this.$q.localStorage.getItem("ydb-routines-collapsed");
+    if (this.collapsed) {
+      this.splitterModel = 0;
+    } else {
+      this.splitterModel =
+        this.$q.localStorage.getItem("ydb-routines-splitter") || 15;
     }
   },
   async mounted() {
     await this.getGlobals();
     if (this.shownGlobalList[0]) {
-      this.populateGlobal(this.shownGlobalList[0]);
+      this.populateGlobal(this.shownGlobalList[0].g);
     }
   }
 };

@@ -1,19 +1,15 @@
-%YDBWEBXUSCNT ;ISF/RWF - Job counting for YottaDB ;2018-05-02  11:10 AM
-	;Copyright (C) 2021 YottaDB, LLC
-	;
-	; This program is free software: you can redistribute it and/or modify
-	; it under the terms of the GNU Affero General Public License as
-	; published by the Free Software Foundation, either version 3 of the
-	; License, or (at your option) any later version. ;
-	;
-	; This program is distributed in the hope that it will be useful,
-	; but WITHOUT ANY WARRANTY; without even the implied warranty of
-	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	; GNU Affero General Public License for more details. ;
-	;
-	; You should have received a copy of the GNU Affero General Public License
-	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
-	;
+%YDBWEBXUSCNT ;Job counting for YottaDB; 05-07-2021 
+	;#################################################################
+	;#                                                               #
+	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# All rights reserved.                                          #
+	;#                                                               #
+	;#   This source code contains the intellectual property         #
+	;#   of its copyright holder(s), and is made available           #
+	;#   under a license.  If you do not know the terms of           #
+	;#   the license, please stop and do not read further.           #
+	;#                                                               #
+	;#################################################################		
 COUNT(INC,JOB) ;Keep count of jobs
 	; DECOMMISION *10002*
 	I $T(^%PEEKBYNAME)]"" QUIT

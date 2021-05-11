@@ -1,25 +1,16 @@
-%YDBWEBZU ;SF/JLI,RWF - For YottaDB, TIE ALL TERMINALS TO THIS ROUTINE!! ;2017-01-09  3:51 PM
-	; Copyright (C) 2021 YottaDB, LLC
-	;
-	; This program is free software: you can redistribute it and/or modify
-	; it under the terms of the GNU Affero General Public License as
-	; published by the Free Software Foundation, either version 3 of the
-	; License, or (at your option) any later version. ;
-	;
-	; This program is distributed in the hope that it will be useful,
-	; but WITHOUT ANY WARRANTY; without even the implied warranty of
-	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	; GNU Affero General Public License for more details. ;
-	;
-	; You should have received a copy of the GNU Affero General Public License
-	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
-	;
-	;;8.0;KERNEL;**275,419,10001**;Jul 10, 1995;Build 21
-	; Submitted to OSEHRA in 2017 by Sam Habiel for OSEHRA
-	; Original Routine authored by Department of Veterans Affairs
-	; EP JOBEXAM rewritten by Sam Habiel 2016. ;
-	;
-	;The env var ZINTRRUPT should be set to catch all interrupts. ;
+%YDBWEBZU ;Job Exam Routine; 05-07-2021
+	;#################################################################
+	;#                                                               #
+	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# All rights reserved.                                          #
+	;#                                                               #
+	;#   This source code contains the intellectual property         #
+	;#   of its copyright holder(s), and is made available           #
+	;#   under a license.  If you do not know the terms of           #
+	;#   the license, please stop and do not read further.           #
+	;#                                                               #
+	;#################################################################
+	;	
 EN ;See that escape processing is off, Conflict with Screenman
 	U $P:(NOCENABLE:NOESCAPE)
 	N $ESTACK,$ETRAP S $ETRAP="D ERR^%YDBWEBZU Q:$QUIT -9 Q"

@@ -1,27 +1,15 @@
-%YDBWEBGDE ;; 05/07/2021 ; YottaDB WEB GUI GDE modified version 
-	; Copyright (C) 2021 YottaDB, LLC
-	;
-	; This program is free software: you can redistribute it and/or modify
-	; it under the terms of the GNU Affero General Public License as
-	; published by the Free Software Foundation, either version 3 of the
-	; License, or (at your option) any later version. ;
-	;
-	; This program is distributed in the hope that it will be useful,
-	; but WITHOUT ANY WARRANTY; without even the implied warranty of
-	; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	; GNU Affero General Public License for more details. ;
-	;
-	; You should have received a copy of the GNU Affero General Public License
-	; along with this program.  If not, see <https://www.gnu.org/licenses/>. ;
-	;
-	; Get the global directory as a JSON object
-	;
-	; @param {Array} RESULT - Passed by reference. The JSON representation of the global directory
-	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-	;
-	; @example
-	; d get^GDEWEB(.RESULT,.ARGS)
-	;
+%YDBWEBGDE ; YottaDB WEB GUI GDE modified version; 05-07-2021
+	;#################################################################
+	;#                                                               #
+	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# All rights reserved.                                          #
+	;#                                                               #
+	;#   This source code contains the intellectual property         #
+	;#   of its copyright holder(s), and is made available           #
+	;#   under a license.  If you do not know the terms of           #
+	;#   the license, please stop and do not read further.           #
+	;#                                                               #
+	;#################################################################		
 	Q
 get(HTTPREQ,HTTPRSP,HTTPARGS) ;
 	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
@@ -815,6 +803,7 @@ CREATEREGION(I,O)
 	M @R@("RESULT")=A
 	S @R@("STATUS")="true"
 	Q
+	;
 	;
 	;
 	;
